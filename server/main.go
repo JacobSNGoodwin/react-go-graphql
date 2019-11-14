@@ -1,14 +1,20 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/graphql-go/graphql"
 	"github.com/graphql-go/handler"
+	"github.com/maxbrain0/react-go-graphql/server/logger"
+	"github.com/sirupsen/logrus"
 )
 
+var ctxLogger = logger.CtxLogger
+
 func main() {
+	port := 8080
 	// Schema
 	fields := graphql.Fields{
 		"hello": &graphql.Field{
@@ -33,5 +39,14 @@ func main() {
 	})
 
 	http.Handle("/graphql", h)
-	http.ListenAndServe(":8080", nil)
+
+	ctxLogger.WithFields(logrus.Fields{
+		"port": port,
+	}).Info("Starting server")
+
+	if err := http.ListenAndServe(fmt.Sprintf(":%v", port), nil); err != nil {
+		ctxLogger.WithFields(logrus.Fields{
+			"port": port,
+		}).Fatal("Failed to serve application on given port")
+	}
 }
