@@ -7,6 +7,7 @@ import (
 
 	"github.com/graphql-go/graphql"
 	"github.com/graphql-go/handler"
+	"github.com/maxbrain0/react-go-graphql/server/data"
 	"github.com/maxbrain0/react-go-graphql/server/gql"
 	"github.com/maxbrain0/react-go-graphql/server/logger"
 	"github.com/sirupsen/logrus"
@@ -17,8 +18,13 @@ var ctxLogger = logger.CtxLogger
 func main() {
 	port := 8080
 
-	// route query
-	schemaConfig := graphql.SchemaConfig{Query: gql.RootQuery}
+	// initialize data source
+	var ds = data.Data{}
+	ds.Init()
+
+	//schema setup and serve
+	// config of query and mutations setup
+	schemaConfig := graphql.SchemaConfig{Query: gql.GetRootQuery(&ds)}
 	schema, err := graphql.NewSchema(schemaConfig)
 	if err != nil {
 		log.Fatalf("failed to create new schema, error: %v", err)

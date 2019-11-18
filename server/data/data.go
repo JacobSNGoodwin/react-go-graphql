@@ -3,40 +3,40 @@ package data
 import "github.com/maxbrain0/react-go-graphql/server/logger"
 
 // User holds information about a user
-type User struct {
+type user struct {
 	ID   int64  `json:"id"`
 	Name string `json:"name"`
 }
 
 // Data holds some mock product data
 type Data struct {
-	Users []User
+	Users []user
 }
 
-var startingData = []User{
+var startingData = []user{
 	{
 		ID:   1,
-		Name: "Wax seal",
+		Name: "Bill123",
 	},
 	{
 		ID:   2,
-		Name: "Toilet Flap",
+		Name: "John987",
 	},
 	{
 		ID:   3,
-		Name: "Bidet Seat",
+		Name: "GuyWithTheHair",
 	},
 }
 
 var ctxLogger = logger.CtxLogger
 
-// InitData initializes DataStruct with mock data
-func (d *Data) InitData() {
+// Init initializes DataStruct with mock data
+func (d *Data) Init() {
 	for _, val := range startingData {
 		d.Users = append(d.Users, val)
 	}
 
-	ctxLogger.Debug("Products array has been filled")
+	ctxLogger.Debug("Users array has been filled")
 }
 
 // func (d *Data) GetUserByID(id int64) User {
@@ -48,7 +48,9 @@ func (d *Data) InitData() {
 
 // }
 
+// Place holder for when we have more complicated operations with db
+
 // GetUsers retrieves all users from Data repository
-func (d *Data) GetUsers() []User {
-	return d.Users
-}
+// func (d *Data) GetUsers() []user {
+// 	return d.users
+// }
