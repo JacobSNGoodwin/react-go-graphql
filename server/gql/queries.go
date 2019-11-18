@@ -3,7 +3,10 @@ package gql
 import (
 	"github.com/graphql-go/graphql"
 	"github.com/maxbrain0/react-go-graphql/server/data"
+	"github.com/maxbrain0/react-go-graphql/server/logger"
 )
+
+var ctxLogger = logger.CtxLogger
 
 // GetRootQuery returns the root query with the datasource plugged into it
 func GetRootQuery(ds *data.Data) *graphql.Object {
@@ -14,7 +17,23 @@ func GetRootQuery(ds *data.Data) *graphql.Object {
 				Type:        graphql.NewList(userType),
 				Description: "A list of all users",
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					return ds.Users, nil
+					return ds.GetUsers(), nil
+				},
+			},
+			"user": &graphql.Field{
+				Type:        userType,
+				Description: "Gets a single user by id",
+				Args: graphql.FieldConfigArgument{
+					"id": &graphql.ArgumentConfig{
+						Type: graphql.Int,
+					},
+				},
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					id, ok := p.Args["id"].(int)
+					if !ok {
+						return nil, nil
+					}
+					return ds.GetUserByID(id)
 				},
 			},
 		},
