@@ -1,14 +1,11 @@
-package middleware
+package gql
 
 import (
 	"context"
 	"net/http"
 
 	"github.com/graphql-go/handler"
-	"github.com/maxbrain0/react-go-graphql/server/logger"
 )
-
-var ctxLogger = logger.CtxLogger
 
 type contextKey string
 

@@ -4,6 +4,7 @@ import (
 	"github.com/graphql-go/graphql"
 	"github.com/maxbrain0/react-go-graphql/server/data"
 	"github.com/maxbrain0/react-go-graphql/server/logger"
+	"github.com/sirupsen/logrus"
 )
 
 var ctxLogger = logger.CtxLogger
@@ -17,6 +18,12 @@ func GetRootQuery(ds *data.Data) *graphql.Object {
 				Type:        graphql.NewList(userType),
 				Description: "A list of all users",
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					header, _ := GetHeader(p.Context)
+
+					ctxLogger.WithFields(logrus.Fields{
+						"user": header.Get("user"),
+						"role": header.Get("role"),
+					}).Debugln("In users query")
 					return ds.GetUsers(), nil
 				},
 			},
