@@ -10,6 +10,7 @@ import (
 	"github.com/maxbrain0/react-go-graphql/server/data"
 	"github.com/maxbrain0/react-go-graphql/server/gql"
 	"github.com/maxbrain0/react-go-graphql/server/logger"
+	"github.com/maxbrain0/react-go-graphql/server/middleware"
 	"github.com/sirupsen/logrus"
 )
 
@@ -37,7 +38,7 @@ func main() {
 		Playground: true,
 	})
 
-	http.Handle("/graphql", h)
+	http.Handle("/graphql", middleware.HTTPMiddleware(h))
 
 	ctxLogger.WithFields(logrus.Fields{
 		"port": port,
