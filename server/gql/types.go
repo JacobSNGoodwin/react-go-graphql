@@ -11,21 +11,9 @@ var userType = graphql.NewObject(graphql.ObjectConfig{
 	Fields: graphql.Fields{
 		"id": &graphql.Field{
 			Type: graphql.NewNonNull(graphql.Int),
-			// Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-			// 	if user, ok := p.Source.(data.User); ok {
-			// 		return user.ID, nil
-			// 	}
-			// 	return nil, nil
-			// },
 		},
 		"name": &graphql.Field{
 			Type: graphql.NewNonNull(graphql.String),
-			// Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-			// 	if user, ok := p.Source.(data.User); ok {
-			// 		return user.Name, nil
-			// 	}
-			// 	return nil, nil
-			// },
 		},
 	},
 })
