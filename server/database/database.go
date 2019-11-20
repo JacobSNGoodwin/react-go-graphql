@@ -34,4 +34,18 @@ func (d *Database) Connect() {
 // Init assures tables for provided models are available
 func (d *Database) Init() {
 	d.DB.AutoMigrate(&models.User{}, &models.Role{})
+
+	var firstUser = &models.User{
+		Name:  "Jacob",
+		Email: "jacob.test.com",
+		Roles: []*models.Role{
+			&models.Role{
+				Name: "Admin",
+			},
+			&models.Role{
+				Name: "Editor",
+			},
+		},
+	}
+	d.DB.FirstOrCreate(firstUser)
 }
