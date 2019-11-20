@@ -69,7 +69,7 @@ func main() {
 	})
 
 	// use middleware which gets request headers and injects db
-	http.Handle("/graphql", gql.HTTPMiddleware(h))
+	http.Handle("/graphql", gql.HTTPMiddleware(h, d.DB))
 
 	// run server in go func, and gracefully shut down server and database connection
 	srv := &http.Server{
