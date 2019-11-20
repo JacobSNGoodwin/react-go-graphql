@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/jinzhu/gorm"
+	"github.com/maxbrain0/react-go-graphql/server/models"
 )
 
 // Database holds connection string info for that database
@@ -28,4 +29,17 @@ func (d *Database) Connect() {
 	}
 
 	d.DB = db
+}
+
+// Init assures tables for provided models are available
+func (d *Database) Init() {
+	d.DB.AutoMigrate(&models.User{})
+
+	user := &models.User{
+		Name:  "Jacob",
+		Email: "jacob@jacob.com",
+		Role:  "Site king",
+	}
+
+	d.DB.Create(user)
 }

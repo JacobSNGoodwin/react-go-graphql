@@ -57,6 +57,7 @@ func main() {
 		"dbname": dbName,
 	}).Info("Connection to Postgres DB established")
 
+	d.Init()
 	defer d.DB.Close()
 
 	// setup handler endpoint
