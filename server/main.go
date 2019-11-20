@@ -7,6 +7,8 @@ import (
 
 	"github.com/graphql-go/graphql"
 	"github.com/graphql-go/handler"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/maxbrain0/react-go-graphql/server/gql"
 	"github.com/maxbrain0/react-go-graphql/server/logger"
 	"github.com/sirupsen/logrus"
@@ -26,6 +28,20 @@ func main() {
 		log.Fatalf("failed to create new schema, error: %v", err)
 	}
 
+	// setup db
+	db, err := gorm.Open("postgres", "host=localhost port=5432 user=user dbname=gql_demo password=password sslmode=disable")
+	if err != nil {
+		log.Fatalf("Failed to create connection to postgres database: %v", err.Error())
+	}
+	ctxLogger.WithFields(logrus.Fields{
+		"host":   "localhost",
+		"port":   5432,
+		"dbname": "gql-demo",
+	}).Info("Connection to Postgres DB established")
+
+	defer db.Close()
+
+	// setup handler endpoint
 	h := handler.New(&handler.Config{
 		Schema:     &schema,
 		Pretty:     true,
@@ -33,6 +49,7 @@ func main() {
 		Playground: true,
 	})
 
+	// use middleware which gets request headers and injects db
 	http.Handle("/graphql", gql.HTTPMiddleware(h))
 
 	ctxLogger.WithFields(logrus.Fields{
