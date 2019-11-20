@@ -28,15 +28,24 @@ func main() {
 		log.Fatalf("failed to create new schema, error: %v", err)
 	}
 
-	// setup db
+	// setup db - variables can be conditionally set for env or with flags
+	dbHost := "localhost"
+	dbPort := 5432
+	dbUser := "user"
+	dbName := "gql_demo"
+	dbSSLMode := "disable"
+
+	connStr := "host=%s port=%d user=%s dbname=%s sslmode=%s"
+	connStr = fmt.Sprintf(connStr, dbHost, dbPort, dbUser, dbName, dbSSLMode)
+
 	db, err := gorm.Open("postgres", "host=localhost port=5432 user=user dbname=gql_demo password=password sslmode=disable")
 	if err != nil {
 		log.Fatalf("Failed to create connection to postgres database: %v", err.Error())
 	}
 	ctxLogger.WithFields(logrus.Fields{
-		"host":   "localhost",
-		"port":   5432,
-		"dbname": "gql-demo",
+		"host":   dbHost,
+		"port":   dbPort,
+		"dbname": dbName,
 	}).Info("Connection to Postgres DB established")
 
 	defer db.Close()
