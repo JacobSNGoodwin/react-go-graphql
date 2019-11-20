@@ -33,13 +33,5 @@ func (d *Database) Connect() {
 
 // Init assures tables for provided models are available
 func (d *Database) Init() {
-	d.DB.AutoMigrate(&models.User{})
-
-	user := &models.User{
-		Name:  "Jacob",
-		Email: "jacob@jacob.com",
-		Role:  "Site king",
-	}
-
-	d.DB.Create(user)
+	d.DB.AutoMigrate(&models.User{}, &models.Role{})
 }
