@@ -1,9 +1,14 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/graphql-go/graphql"
 	"github.com/graphql-go/handler"
@@ -65,13 +70,45 @@ func main() {
 	// use middleware which gets request headers and injects db
 	http.Handle("/graphql", gql.HTTPMiddleware(h))
 
+	// run server in go func, and gracefully shut down server and database connection
+	srv := &http.Server{
+		Addr: fmt.Sprintf(":%v", port),
+	}
+
+	done := make(chan os.Signal, 1)
+	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		if err := srv.ListenAndServe(); err != nil {
+			ctxLogger.WithFields(logrus.Fields{
+				"port": port,
+			}).Fatal("Failed to serve application on given port")
+		}
+	}()
+
 	ctxLogger.WithFields(logrus.Fields{
 		"port": port,
-	}).Info("Starting server")
+	}).Info("Server successfully listening on port")
 
-	if err := http.ListenAndServe(fmt.Sprintf(":%v", port), nil); err != nil {
-		ctxLogger.WithFields(logrus.Fields{
-			"port": port,
-		}).Fatal("Failed to serve application on given port")
+	<-done
+
+	// disconnect postgres
+	if err := d.DB.Close(); err != nil {
+		ctxLogger.Fatalf("Failed to shut down databse %v", dbPort)
 	}
+
+	ctxLogger.Info("Successfully closed connection to postgres")
+
+	// give 5 seconds to shutdown server
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer func() {
+		cancel()
+	}()
+
+	if err := srv.Shutdown(ctx); err != nil {
+		ctxLogger.Fatalf("Failed to shut down server on %v", port)
+	}
+
+	ctxLogger.Info("Successfully shut down server")
+
 }
