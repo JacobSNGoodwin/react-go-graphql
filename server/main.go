@@ -7,8 +7,8 @@ import (
 
 	"github.com/graphql-go/graphql"
 	"github.com/graphql-go/handler"
-	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"github.com/maxbrain0/react-go-graphql/server/database"
 	"github.com/maxbrain0/react-go-graphql/server/gql"
 	"github.com/maxbrain0/react-go-graphql/server/logger"
 	"github.com/sirupsen/logrus"
@@ -35,20 +35,24 @@ func main() {
 	dbName := "gql_demo"
 	dbSSLMode := "disable"
 
-	connStr := "host=%s port=%d user=%s dbname=%s sslmode=%s"
-	connStr = fmt.Sprintf(connStr, dbHost, dbPort, dbUser, dbName, dbSSLMode)
-
-	db, err := gorm.Open("postgres", "host=localhost port=5432 user=user dbname=gql_demo password=password sslmode=disable")
-	if err != nil {
-		log.Fatalf("Failed to create connection to postgres database: %v", err.Error())
+	var d = database.Database{
+		Host:    dbHost,
+		Port:    dbPort,
+		User:    dbUser,
+		Name:    dbName,
+		SSLMode: dbSSLMode,
 	}
+
+	// connects to db given above parameters
+	d.Connect()
+
 	ctxLogger.WithFields(logrus.Fields{
 		"host":   dbHost,
 		"port":   dbPort,
 		"dbname": dbName,
 	}).Info("Connection to Postgres DB established")
 
-	defer db.Close()
+	defer d.DB.Close()
 
 	// setup handler endpoint
 	h := handler.New(&handler.Config{

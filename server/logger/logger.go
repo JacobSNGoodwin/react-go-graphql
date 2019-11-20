@@ -10,7 +10,6 @@ import (
 var CtxLogger = log.New()
 
 func init() {
-	CtxLogger.SetFormatter(&log.JSONFormatter{})
 	// Output to stdout instead of the default stderr
 	// Can be any io.Writer, see below for File example
 	CtxLogger.SetOutput(os.Stdout)
