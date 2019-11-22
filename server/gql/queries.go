@@ -4,7 +4,6 @@ import (
 	"github.com/graphql-go/graphql"
 	"github.com/maxbrain0/react-go-graphql/server/logger"
 	"github.com/maxbrain0/react-go-graphql/server/models"
-	"github.com/sirupsen/logrus"
 )
 
 var ctxLogger = logger.CtxLogger
@@ -16,16 +15,25 @@ var RootQuery = graphql.NewObject(graphql.ObjectConfig{
 		"users": &graphql.Field{
 			Type:        graphql.NewList(userType),
 			Description: "A list of all users",
+			Args: graphql.FieldConfigArgument{
+				"limit": &graphql.ArgumentConfig{
+					Type: graphql.Int,
+				},
+				"offset": &graphql.ArgumentConfig{
+					Type: graphql.Int,
+				},
+			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				db, _ := GetDB(p.Context)
 				var users []models.User
-				db.Limit(1).Find(&users)
-
-				ctxLogger.WithFields(logrus.Fields{
-					"Id":    users[0].ID,
-					"Name":  users[0].Name,
-					"Email": users[0].Email,
-				}).Debug("Users Found")
+				if result :=
+					db.
+						Order("email").
+						Limit(p.Args["limit"]).
+						Offset(p.Args["offset"]).
+						Find(&users); result.Error != nil {
+					return nil, nil
+				}
 
 				return users, nil
 			},
