@@ -5,5 +5,5 @@ type User struct {
 	Base
 	Name  string  `gorm:"type:varchar(100);not null"`
 	Email string  `gorm:"type:varchar(100);unique_index"`
-	Roles []*Role `gorm:"many2many:user_roles"`
+	Roles []*Role `gorm:"many2many:user_roles;association_autoupdate:false;association_autocreate:false"`
 }
