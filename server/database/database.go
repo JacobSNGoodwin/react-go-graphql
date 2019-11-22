@@ -87,14 +87,14 @@ func (d *Database) Init() {
 	}).Debug("Created or found user")
 
 	// check if we can get back ref (users for given role)
-	var editorUsers []models.User
-	d.DB.Model(&editor).Related(&editorUsers, "Users")
+	// var editorUsers []models.User
+	// d.DB.Model(&editor).Related(&editorUsers, "Users")
 
-	for _, user := range editorUsers {
-		ctxLogger.WithFields(logrus.Fields{
-			"id":        user.ID,
-			"Name":      user.Name,
-			"UpdatedAt": user.UpdatedAt,
-		}).Debug("Found user in editor role")
-	}
+	// for _, user := range editorUsers {
+	// 	ctxLogger.WithFields(logrus.Fields{
+	// 		"id":        user.ID,
+	// 		"Name":      user.Name,
+	// 		"UpdatedAt": user.UpdatedAt,
+	// 	}).Debug("Found user in editor role")
+	// }
 }

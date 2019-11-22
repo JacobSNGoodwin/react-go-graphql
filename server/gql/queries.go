@@ -4,6 +4,7 @@ import (
 	"github.com/graphql-go/graphql"
 	"github.com/maxbrain0/react-go-graphql/server/logger"
 	"github.com/maxbrain0/react-go-graphql/server/models"
+	"github.com/sirupsen/logrus"
 )
 
 var ctxLogger = logger.CtxLogger
@@ -17,9 +18,16 @@ var RootQuery = graphql.NewObject(graphql.ObjectConfig{
 			Description: "A list of all users",
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				db, _ := GetDB(p.Context)
-				tableExists := db.HasTable(&models.User{})
-				ctxLogger.WithField("Has table?", tableExists).Debugln("Checking if DB passed to gql resolver")
-				return nil, nil
+				var users []models.User
+				db.Limit(1).Find(&users)
+
+				ctxLogger.WithFields(logrus.Fields{
+					"Id":    users[0].ID,
+					"Name":  users[0].Name,
+					"Email": users[0].Email,
+				}).Debug("Users Found")
+
+				return users, nil
 			},
 		},
 		"user": &graphql.Field{
