@@ -62,7 +62,7 @@ func (d *Database) Init() {
 	// Create users
 	d.DB.FirstOrCreate(&user1, models.User{
 		Name:  "Jacob",
-		Email: "jacob.test.com",
+		Email: "jacob@test.com",
 	})
 
 	// seems hwe have to do it this way for back ref
@@ -75,7 +75,7 @@ func (d *Database) Init() {
 
 	d.DB.FirstOrCreate(&user2, models.User{
 		Name:  "Thea",
-		Email: "thea.test.com",
+		Email: "thea@test.com",
 	})
 
 	// seems hwe have to do it this way for back ref
