@@ -10,6 +10,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/casbin/casbin"
+	gormadapter "github.com/casbin/gorm-adapter/v2"
 	"github.com/graphql-go/graphql"
 	"github.com/graphql-go/handler"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
@@ -56,6 +58,14 @@ func main() {
 		"port":   dbPort,
 		"dbname": dbName,
 	}).Info("Connection to Postgres DB established")
+
+	a, err := gormadapter.NewAdapterByDB(d.DB)
+
+	if err != nil {
+		ctxLogger.Fatalf("Unable to connect gorm adapter: %v", err.Error())
+	}
+
+	e := casbin.NewEnforcer("config/rbac_model.conf", a)
 
 	d.Init()
 	defer d.DB.Close()
