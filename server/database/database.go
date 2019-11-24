@@ -90,4 +90,9 @@ func (d *Database) Init(e *casbin.Enforcer) {
 	e.AddRoleForUser(user1.Email, "Admin")
 	e.AddRoleForUser(user1.Email, "Edit")
 	e.AddRoleForUser(user2.Email, "Edit")
+
+	e.AddPolicy("Admin", "path", "write")
+	e.AddPolicy("Admin", "path", "read")
+
+	e.AddPolicy("Edit", "path", "read")
 }
