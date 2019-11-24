@@ -71,7 +71,7 @@ func main() {
 		ctxLogger.Fatalf("Unable to setup casbin config: %v", err.Error())
 	}
 
-	// d.Init()
+	d.Init(e)
 	defer d.DB.Close()
 
 	// setup handler endpoint

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/casbin/casbin/v2"
 	"github.com/jinzhu/gorm"
 	"github.com/maxbrain0/react-go-graphql/server/logger"
 	"github.com/maxbrain0/react-go-graphql/server/models"
@@ -36,28 +37,28 @@ func (d *Database) Connect() {
 }
 
 // Init assures tables for provided models are available and initialized a couple of users and roles
-func (d *Database) Init() {
-	d.DB.AutoMigrate(&models.User{}, &models.Role{})
+func (d *Database) Init(e *casbin.Enforcer) {
+	d.DB.AutoMigrate(&models.User{})
 
-	var admin models.Role
-	var editor models.Role
+	// var admin models.Role
+	// var editor models.Role
 	var user1 models.User
 	var user2 models.User
 
 	// Create roles first, then these role ids can be assigned to users
-	d.DB.Where(models.Role{Name: "Admin"}).FirstOrCreate(&admin)
-	ctxLogger.WithFields(logrus.Fields{
-		"id":        admin.ID,
-		"Name":      admin.Name,
-		"UpdatedAt": admin.UpdatedAt,
-	}).Debug("Created or found role")
+	// d.DB.Where(models.Role{Name: "Admin"}).FirstOrCreate(&admin)
+	// ctxLogger.WithFields(logrus.Fields{
+	// 	"id":        admin.ID,
+	// 	"Name":      admin.Name,
+	// 	"UpdatedAt": admin.UpdatedAt,
+	// }).Debug("Created or found role")
 
-	d.DB.Where(models.Role{Name: "Editor"}).FirstOrCreate(&editor)
-	ctxLogger.WithFields(logrus.Fields{
-		"id":        editor.ID,
-		"Name":      editor.Name,
-		"UpdatedAt": editor.UpdatedAt,
-	}).Debug("Created or found role")
+	// d.DB.Where(models.Role{Name: "Editor"}).FirstOrCreate(&editor)
+	// ctxLogger.WithFields(logrus.Fields{
+	// 	"id":        editor.ID,
+	// 	"Name":      editor.Name,
+	// 	"UpdatedAt": editor.UpdatedAt,
+	// }).Debug("Created or found role")
 
 	// Create users
 	d.DB.FirstOrCreate(&user1, models.User{
@@ -66,7 +67,7 @@ func (d *Database) Init() {
 	})
 
 	// seems hwe have to do it this way for back ref
-	d.DB.Model(&user1).Association("Roles").Append([]models.Role{admin, editor})
+	// d.DB.Model(&user1).Association("Roles").Append([]models.Role{admin, editor})
 	ctxLogger.WithFields(logrus.Fields{
 		"id":        user1.ID,
 		"Name":      user1.Name,
@@ -79,22 +80,14 @@ func (d *Database) Init() {
 	})
 
 	// seems hwe have to do it this way for back ref
-	d.DB.Model(&user2).Association("Roles").Append([]models.Role{editor})
+	// d.DB.Model(&user2).Association("Roles").Append([]models.Role{editor})
 	ctxLogger.WithFields(logrus.Fields{
 		"id":        user2.ID,
 		"Name":      user2.Name,
 		"UpdatedAt": user2.UpdatedAt,
 	}).Debug("Created or found user")
 
-	// check if we can get back ref (users for given role)
-	// var editorUsers []models.User
-	// d.DB.Model(&editor).Related(&editorUsers, "Users")
-
-	// for _, user := range editorUsers {
-	// 	ctxLogger.WithFields(logrus.Fields{
-	// 		"id":        user.ID,
-	// 		"Name":      user.Name,
-	// 		"UpdatedAt": user.UpdatedAt,
-	// 	}).Debug("Found user in editor role")
-	// }
+	e.AddRoleForUser(user1.Email, "Admin")
+	e.AddRoleForUser(user1.Email, "Edit")
+	e.AddRoleForUser(user2.Email, "Edit")
 }
