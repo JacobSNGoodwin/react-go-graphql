@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/casbin/casbin"
+	casbin "github.com/casbin/casbin/v2"
 	"github.com/graphql-go/handler"
 	"github.com/jinzhu/gorm"
 )

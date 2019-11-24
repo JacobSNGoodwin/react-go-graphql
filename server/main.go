@@ -10,7 +10,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/casbin/casbin"
+	casbin "github.com/casbin/casbin/v2"
 	gormadapter "github.com/casbin/gorm-adapter/v2"
 	"github.com/graphql-go/graphql"
 	"github.com/graphql-go/handler"
@@ -65,7 +65,11 @@ func main() {
 		ctxLogger.Fatalf("Unable to connect gorm adapter: %v", err.Error())
 	}
 
-	e := casbin.NewEnforcer("./config/rbac_model.conf", a)
+	e, err := casbin.NewEnforcer("config/rbac_model.conf", a)
+
+	if err != nil {
+		ctxLogger.Fatalf("Unable to setup casbin config: %v", err.Error())
+	}
 
 	// d.Init()
 	defer d.DB.Close()
