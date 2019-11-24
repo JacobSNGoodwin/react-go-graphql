@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/casbin/casbin"
 	"github.com/graphql-go/handler"
 	"github.com/jinzhu/gorm"
 )
@@ -13,12 +14,19 @@ type contextKey string
 const contextKeyHeader = contextKey("header")
 const contextKeyDB = contextKey("db")
 
+// MiddlewareConfig holds references that will be accessed in middleware
+type MiddlewareConfig struct {
+	GQLHandler *handler.Handler
+	DB         *gorm.DB
+	E          *casbin.Enforcer
+}
+
 // HTTPMiddleware adds the request header to a graphql handler function
-func HTTPMiddleware(next *handler.Handler, db *gorm.DB) http.Handler {
+func HTTPMiddleware(c MiddlewareConfig) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		c1 := context.WithValue(r.Context(), contextKeyHeader, r.Header)
-		ctx := context.WithValue(c1, contextKeyDB, db)
-		next.ContextHandler(ctx, w, r)
+		ctx := context.WithValue(c1, contextKeyDB, c.DB)
+		c.GQLHandler.ContextHandler(ctx, w, r)
 	})
 }
 

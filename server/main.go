@@ -65,9 +65,9 @@ func main() {
 		ctxLogger.Fatalf("Unable to connect gorm adapter: %v", err.Error())
 	}
 
-	e := casbin.NewEnforcer("config/rbac_model.conf", a)
+	e := casbin.NewEnforcer("./config/rbac_model.conf", a)
 
-	d.Init()
+	// d.Init()
 	defer d.DB.Close()
 
 	// setup handler endpoint
@@ -79,7 +79,11 @@ func main() {
 	})
 
 	// use middleware which gets request headers and injects db
-	http.Handle("/graphql", gql.HTTPMiddleware(h, d.DB))
+	http.Handle("/graphql", gql.HTTPMiddleware(gql.MiddlewareConfig{
+		GQLHandler: h,
+		DB:         d.DB,
+		E:          e,
+	}))
 
 	// run server in go func, and gracefully shut down server and database connection
 	srv := &http.Server{
