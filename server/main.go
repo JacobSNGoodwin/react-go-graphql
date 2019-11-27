@@ -29,7 +29,6 @@ func main() {
 	// load env variables from .env file
 	// need check to run coad only in DEV mode
 	envPath, err := filepath.Abs("./config/.env")
-	ctxLogger.Debugf("Loaded file at %v", envPath)
 	if err != nil {
 		ctxLogger.Fatal("Failed to load development env file")
 	}
@@ -52,11 +51,11 @@ func main() {
 	}
 
 	// setup db - variables can be conditionally set for env or with flags
-	dbHost := "localhost"
-	dbPort := 5432
-	dbUser := "user"
-	dbName := "gql_demo"
-	dbSSLMode := "disable"
+	dbHost := os.Getenv("PG_HOST")
+	dbPort := os.Getenv("PG_PORT")
+	dbUser := os.Getenv("PG_USER")
+	dbName := os.Getenv("PG_DB_NAME")
+	dbSSLMode := os.Getenv("PG_SSL_MODE")
 
 	var d = database.Database{
 		Host:    dbHost,
