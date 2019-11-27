@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"time"
 
@@ -15,6 +16,7 @@ import (
 	"github.com/graphql-go/graphql"
 	"github.com/graphql-go/handler"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"github.com/joho/godotenv"
 	"github.com/maxbrain0/react-go-graphql/server/database"
 	"github.com/maxbrain0/react-go-graphql/server/gql"
 	"github.com/maxbrain0/react-go-graphql/server/logger"
@@ -24,8 +26,22 @@ import (
 var ctxLogger = logger.CtxLogger
 
 func main() {
-	// could receive a flag
-	port := 8080
+	// load env variables from .env file
+	// need check to run coad only in DEV mode
+	envPath, err := filepath.Abs("./config/.env")
+	ctxLogger.Debugf("Loaded file at %v", envPath)
+	if err != nil {
+		ctxLogger.Fatal("Failed to load development env file")
+	}
+
+	err = godotenv.Load(envPath)
+
+	if err != nil {
+		ctxLogger.Fatal("Error loading .env file")
+	}
+
+	//
+	port := os.Getenv("SERVER_PORT")
 
 	//schema setup and serve
 	// config of query and mutations setup
