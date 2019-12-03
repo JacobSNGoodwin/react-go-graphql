@@ -17,6 +17,7 @@ import (
 	"github.com/graphql-go/handler"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/joho/godotenv"
+	"github.com/maxbrain0/react-go-graphql/server/config"
 	"github.com/maxbrain0/react-go-graphql/server/database"
 	"github.com/maxbrain0/react-go-graphql/server/gql"
 	"github.com/maxbrain0/react-go-graphql/server/logger"
@@ -89,6 +90,11 @@ func main() {
 	d.Init(e)
 	defer d.DB.Close()
 
+	// setup auth config for login queries and mutations
+	authConfig := config.Auth{}
+
+	authConfig.LoadConfigs()
+
 	// setup handler endpoint
 	h := handler.New(&handler.Config{
 		Schema:     &schema,
@@ -102,6 +108,7 @@ func main() {
 		GQLHandler: h,
 		DB:         d.DB,
 		E:          e,
+		AUTH:       authConfig.Configs,
 	}))
 
 	// run server in go func, and gracefully shut down server and database connection
