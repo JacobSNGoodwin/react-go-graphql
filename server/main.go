@@ -93,7 +93,7 @@ func main() {
 	// setup auth config for login queries and mutations
 	authConfig := config.Auth{}
 
-	authConfig.LoadConfigs()
+	authConfig.Load()
 
 	// setup handler endpoint
 	h := handler.New(&handler.Config{
