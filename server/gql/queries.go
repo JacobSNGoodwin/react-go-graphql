@@ -72,35 +72,5 @@ var RootQuery = graphql.NewObject(graphql.ObjectConfig{
 				return user, nil
 			},
 		},
-		"googleLoginUrl": &graphql.Field{
-			Type:        graphql.String,
-			Description: "Returns a login url for Google. This query is optional for your application, as user can also obtrain a code for id/access token on the client side",
-			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				authConfigs, _ := GetAuthConfigs(p.Context)
-
-				val, ok := authConfigs["google"]
-
-				if !ok {
-					return nil, nil
-				}
-
-				return val.AuthCodeURL("somedummystatefornow"), nil
-			},
-		},
-		"fbLoginUrl": &graphql.Field{
-			Type:        graphql.String,
-			Description: "Returns a login url for Facebook. This query is optional for your application, as user can also obtrain a code for id/access token on the client side",
-			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				authConfigs, _ := GetAuthConfigs(p.Context)
-
-				val, ok := authConfigs["facebook"]
-
-				if !ok {
-					return nil, nil
-				}
-
-				return val.AuthCodeURL("somedummystatefornow"), nil
-			},
-		},
 	},
 })
