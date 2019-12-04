@@ -7,7 +7,7 @@ import (
 	casbin "github.com/casbin/casbin/v2"
 	"github.com/graphql-go/handler"
 	"github.com/jinzhu/gorm"
-	"golang.org/x/oauth2"
+	"github.com/maxbrain0/react-go-graphql/server/config"
 )
 
 type contextKey string
@@ -21,7 +21,7 @@ type MiddlewareConfig struct {
 	GQLHandler *handler.Handler
 	DB         *gorm.DB
 	E          *casbin.Enforcer
-	AUTH       map[string]*oauth2.Config
+	AUTH       config.Auth
 }
 
 // HTTPMiddleware adds the request header to a graphql handler function
@@ -46,8 +46,8 @@ func GetDB(ctx context.Context) (*gorm.DB, bool) {
 	return db, ok
 }
 
-// GetAuthConfigs loads a map with key strings to the oauth2 provider and values containing oauth2.config
-func GetAuthConfigs(ctx context.Context) (map[string]*oauth2.Config, bool) {
-	configs, ok := ctx.Value(contextKeyAuth).(map[string]*oauth2.Config)
-	return configs, ok
+// GetAuth loads a map with key strings to the oauth2 provider and values containing oauth2.config
+func GetAuth(ctx context.Context) (config.Auth, bool) {
+	config, ok := ctx.Value(contextKeyAuth).(config.Auth)
+	return config, ok
 }

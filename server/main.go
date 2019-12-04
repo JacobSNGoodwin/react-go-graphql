@@ -108,7 +108,7 @@ func main() {
 		GQLHandler: h,
 		DB:         d.DB,
 		E:          e,
-		AUTH:       authConfig.Configs,
+		AUTH:       authConfig,
 	}))
 
 	// run server in go func, and gracefully shut down server and database connection

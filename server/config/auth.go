@@ -1,40 +1,31 @@
 package config
 
 import (
+	"context"
 	"os"
 
-	"golang.org/x/oauth2"
+	"github.com/coreos/go-oidc"
+	"github.com/maxbrain0/react-go-graphql/server/logger"
 )
+
+var ctxLogger = logger.CtxLogger
 
 // Auth holds a map of oauth2 configurations that are initialized with environment variables
 // in the LoadConfig method
 type Auth struct {
-	Configs map[string]*oauth2.Config
+	Verifier *oidc.IDTokenVerifier
 }
 
 // LoadConfigs sets up a map of Configs in the Auth struct
 func (a *Auth) LoadConfigs() {
-	// initialize map
-	a.Configs = map[string]*oauth2.Config{}
+	prodiver, err := oidc.NewProvider(context.Background(), "https://accounts.google.com")
 
-	a.Configs["google"] = &oauth2.Config{
-		ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
-		ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
-		Scopes:       []string{"openid", "email", "profile"},
-		Endpoint: oauth2.Endpoint{
-			AuthURL:   "https://accounts.google.com/o/oauth2/v2/auth",
-			TokenURL:  "https://oauth2.googleapis.com/token",
-			AuthStyle: oauth2.AuthStyleInParams,
-		},
+	if err != nil {
+		ctxLogger.Fatalf("Unable to create google oid provider: %v", err.Error())
 	}
 
-	a.Configs["facebook"] = &oauth2.Config{
-		ClientID:     os.Getenv("FACEBOOK_CLIENT_ID"),
-		ClientSecret: os.Getenv("FACEBOOK_CLIENT_SECRET"),
-		Scopes:       []string{"email"},
-		Endpoint: oauth2.Endpoint{
-			AuthURL:  "https://www.facebook.com/v5.0/dialog/oauth",
-			TokenURL: "https://graph.facebook.com/v5.0/oauth/access_token",
-		},
-	}
+	a.Verifier = prodiver.Verifier(&oidc.Config{
+		ClientID: os.Getenv("GOOGLE_CLIENT_ID"),
+	})
+
 }
