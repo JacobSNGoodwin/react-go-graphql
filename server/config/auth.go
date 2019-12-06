@@ -61,7 +61,5 @@ func (a *Auth) Load() {
 	decodedFBRes := new(FBResponse)
 	json.NewDecoder(fbRes.Body).Decode(&decodedFBRes)
 
-	ctxLogger.WithField("AccessToken", decodedFBRes.AccessToken).Debug("Retrieved FB App Access Token")
-
 	a.FBAccessToken = decodedFBRes.AccessToken
 }
