@@ -28,7 +28,7 @@ var RootQuery = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				db, _ := GetDB(p.Context)
+				db := GetDB(p.Context)
 				var users []models.User
 				if result :=
 					db.
@@ -53,7 +53,7 @@ var RootQuery = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				db, _ := GetDB(p.Context)
+				db := GetDB(p.Context)
 				var user models.User
 
 				// Find by uuid or email, which should both be unique

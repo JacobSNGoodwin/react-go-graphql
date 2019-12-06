@@ -35,19 +35,32 @@ func HTTPMiddleware(c MiddlewareConfig) http.Handler {
 }
 
 // GetHeader returns the header as a strgin
-func GetHeader(ctx context.Context) (http.Header, bool) {
+func GetHeader(ctx context.Context) http.Header {
 	header, ok := ctx.Value(contextKeyHeader).(http.Header)
-	return header, ok
+
+	if !ok {
+		ctxLogger.Warningln("Unable to get Header key in HTTPMiddleware")
+	}
+
+	return header
 }
 
 // GetDB retrieves gorm connection from context
-func GetDB(ctx context.Context) (*gorm.DB, bool) {
+func GetDB(ctx context.Context) *gorm.DB {
 	db, ok := ctx.Value(contextKeyDB).(*gorm.DB)
-	return db, ok
+
+	if !ok {
+		ctxLogger.Warningln("Unable to get DB key in HTTPMiddleware")
+	}
+	return db
 }
 
 // GetAuth loads a map with key strings to the oauth2 provider and values containing oauth2.config
-func GetAuth(ctx context.Context) (config.Auth, bool) {
+func GetAuth(ctx context.Context) config.Auth {
 	config, ok := ctx.Value(contextKeyAuth).(config.Auth)
-	return config, ok
+
+	if !ok {
+		ctxLogger.Warningln("Unable to get Auth key in HTTPMiddleware")
+	}
+	return config
 }

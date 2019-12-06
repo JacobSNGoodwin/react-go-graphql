@@ -35,7 +35,7 @@ type GoogleIDClaims struct {
 
 // googleLoginWithToken is a helper function to verify the validity of the id_token provided by Google
 func googleLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
-	auth, _ := GetAuth(p.Context)
+	auth := GetAuth(p.Context)
 	rawToken := p.Args["idToken"].(string)
 
 	idToken, err := auth.GoogleVerifier.Verify(p.Context, rawToken)
@@ -56,6 +56,9 @@ func googleLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
 		"Picture": claims.Picture,
 	}).Debugln("Successfully verified Google ID Token")
 
+	// Find user, return their basic info with roles in jwt
+	// db, ok := GetDB(p.Context)
+
 	return true, nil
 }
 
@@ -63,12 +66,12 @@ func googleLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
 // this token is not the same as the ID token. We also verify this token with FB via and http req
 //Therefore, we receive email, name, and picture as parameters to this mutation
 func fbLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
-	auth, _ := GetAuth(p.Context)
+	auth := GetAuth(p.Context)
 	inputData := p.Args["fbLoginData"].(map[string]interface{})
 	inputToken := inputData["token"].(string)
 	// email := inputData["email"].(string)
 	// name := inputData["name"].(string)
-	// imageURL := inputData["imageUrl"].(string)
+	// imageURI := inputData["imageUri"].(string)
 
 	appToken := auth.FBAccessToken
 
