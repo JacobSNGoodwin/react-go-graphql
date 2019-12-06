@@ -64,8 +64,15 @@ func googleLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
 //Therefore, we receive email, name, and picture as parameters to this mutation
 func fbLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
 	auth, _ := GetAuth(p.Context)
-	inputToken := p.Args["accessToken"].(string)
+	inputData := p.Args["fbLoginData"].(map[string]interface{})
+	inputToken := inputData["token"].(string)
+	// email := inputData["email"].(string)
+	// name := inputData["name"].(string)
+	// imageURL := inputData["imageUrl"].(string)
+
 	appToken := auth.FBAccessToken
+
+	ctxLogger.WithField("Token", inputToken).Debugln("Input token received as argument")
 
 	// verify Facebook user at prescribed endpoint
 	fbUserReqURL := fmt.Sprintf("https://graph.facebook.com/debug_token?input_token=%s&access_token=%s",
