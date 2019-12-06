@@ -22,8 +22,8 @@ var RootMutation = graphql.NewObject(graphql.ObjectConfig{
 			Type:        graphql.Boolean,
 			Description: "Receives an access_token from a client-side login to Facebook, and checks with FB that this is a valid token. If so, a jwt is returned as a string",
 			Args: graphql.FieldConfigArgument{
-				"accessToken": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.String),
+				"fbLoginData": &graphql.ArgumentConfig{
+					Type: fbLoginType,
 				},
 			},
 			Resolve: fbLoginWithToken,

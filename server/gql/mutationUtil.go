@@ -21,14 +21,16 @@ type FBVerificationResponse struct {
 
 // FBVerificationData holds data used in verifying token
 type FBVerificationData struct {
-	AppID               string   `json:"app_id"`
-	UserID              string   `json:"user_id"`
-	Type                string   `json:"type"`
-	Application         string   `json:"application"`
-	IsValid             bool     `json:"is_valid"`
-	DataAccessExpiresAt int      `json:"data_access_expires_at"`
-	ExpiresAt           int      `json:"expires_at"`
-	Scopes              []string `json:""`
+	IsValid             bool `json:"is_valid"`
+	DataAccessExpiresAt int  `json:"data_access_expires_at"`
+	ExpiresAt           int  `json:"expires_at"`
+}
+
+// GoogleIDClaims holds data from Google ID token
+type GoogleIDClaims struct {
+	Email   string `json:"email"`
+	Name    string `json:"name"`
+	Picture string `json:"picture"`
 }
 
 // googleLoginWithToken is a helper function to verify the validity of the id_token provided by Google
@@ -42,29 +44,24 @@ func googleLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
 		return false, err
 	}
 
-	var claims struct {
-		Email      string `json:"email"`
-		Verified   bool   `json:"email_verified"`
-		GivenName  string `json:"given_name"`
-		FamilyName string `json:"family_name"`
-		Picture    string `json:"picture"`
-	}
+	var claims = new(GoogleIDClaims)
 
 	if err := idToken.Claims(&claims); err != nil {
 		return nil, err
 	}
 
 	ctxLogger.WithFields(logrus.Fields{
-		"Email":      claims.Email,
-		"Verified":   claims.Verified,
-		"GivenName":  claims.GivenName,
-		"FamilyName": claims.FamilyName,
-		"Picture":    claims.Picture,
+		"Email":   claims.Email,
+		"Name":    claims.Name,
+		"Picture": claims.Picture,
 	}).Debugln("Successfully verified Google ID Token")
 
 	return true, nil
 }
 
+// fbLoginWithToken is a helper function to verify the validity of the access token provided by FB
+// this token is not the same as the ID token. We also verify this token with FB via and http req
+//Therefore, we receive email, name, and picture as parameters to this mutation
 func fbLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
 	auth, _ := GetAuth(p.Context)
 	inputToken := p.Args["accessToken"].(string)
@@ -76,8 +73,6 @@ func fbLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
 		appToken,
 	)
 
-	ctxLogger.WithField("RequestURL", fbUserReqURL).Debug("Checking FB token validity")
-
 	resp, err := fbClient.Get(fbUserReqURL)
 
 	if err != nil {
@@ -87,9 +82,12 @@ func fbLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
 	defer resp.Body.Close()
 
 	fbData := new(FBVerificationResponse)
+
 	json.NewDecoder(resp.Body).Decode(&fbData)
 
-	ctxLogger.WithField("IsValid", fbData.Data.IsValid).Debug("FB verification response reveived")
+	ctxLogger.WithFields(logrus.Fields{
+		"IsValid": fbData.Data.IsValid,
+	}).Debugln("Successfully verified FB access token validity")
 
 	return fbData.Data.IsValid, nil
 }

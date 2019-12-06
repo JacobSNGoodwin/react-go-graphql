@@ -5,7 +5,7 @@ import (
 	"github.com/maxbrain0/react-go-graphql/server/models"
 )
 
-// UserType holds information for users
+// userType holds information for users
 var userType = graphql.NewObject(graphql.ObjectConfig{
 	Name:        "User",
 	Description: "A user with its accompanying properties",
@@ -26,6 +26,30 @@ var userType = graphql.NewObject(graphql.ObjectConfig{
 		"email": &graphql.Field{
 			Type:        graphql.NewNonNull(graphql.String),
 			Description: "Holds the user's unique email address",
+		},
+	},
+})
+
+// userType holds information for users
+var fbLoginType = graphql.NewInputObject(graphql.InputObjectConfig{
+	Name:        "FBLoginType",
+	Description: "Fields required for fbLoginWithToken",
+	Fields: graphql.InputObjectConfigFieldMap{
+		"token": &graphql.InputObjectFieldConfig{
+			Type:        graphql.NewNonNull(graphql.String),
+			Description: "The access token as a string provided by client-side Login with Facebook",
+		},
+		"name": &graphql.InputObjectFieldConfig{
+			Type:        graphql.NewNonNull(graphql.String),
+			Description: "The full name as provided in the name field by client-side Login with Facebook",
+		},
+		"email": &graphql.InputObjectFieldConfig{
+			Type:        graphql.NewNonNull(graphql.String),
+			Description: "The full name as provided in the name field by client-side Login with Facebook",
+		},
+		"imageUrl": &graphql.InputObjectFieldConfig{
+			Type:        graphql.String,
+			Description: "The image URL provided by client-side Login with Facebook",
 		},
 	},
 })
