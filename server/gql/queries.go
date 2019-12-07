@@ -3,6 +3,7 @@ package gql
 import (
 	"github.com/graphql-go/graphql"
 	"github.com/maxbrain0/react-go-graphql/server/logger"
+	"github.com/maxbrain0/react-go-graphql/server/middleware"
 	"github.com/maxbrain0/react-go-graphql/server/models"
 	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
@@ -28,7 +29,7 @@ var RootQuery = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				db := GetDB(p.Context)
+				db, _ := middleware.GetDB(p.Context)
 				var users []models.User
 				if result :=
 					db.
@@ -53,7 +54,7 @@ var RootQuery = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				db := GetDB(p.Context)
+				db, _ := middleware.GetDB(p.Context)
 				var user models.User
 
 				// Find by uuid or email, which should both be unique

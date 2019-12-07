@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/graphql-go/graphql"
+	"github.com/maxbrain0/react-go-graphql/server/middleware"
 	"github.com/maxbrain0/react-go-graphql/server/models"
 	"github.com/sirupsen/logrus"
 )
@@ -33,7 +34,7 @@ type GoogleIDClaims struct {
 
 // googleLoginWithToken is a helper function to verify the validity of the id_token provided by Google
 func googleLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
-	auth := GetAuth(p.Context)
+	auth, _ := middleware.GetAuth(p.Context)
 	rawToken := p.Args["idToken"].(string)
 
 	idToken, err := auth.GoogleVerifier.Verify(p.Context, rawToken)
@@ -68,7 +69,7 @@ func googleLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
 // this token is not the same as the ID token. We also verify this token with FB via and http req
 //Therefore, we receive email, name, and picture as parameters to this mutation
 func fbLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
-	auth := GetAuth(p.Context)
+	auth, _ := middleware.GetAuth(p.Context)
 	inputData := p.Args["fbLoginData"].(map[string]interface{})
 	inputToken := inputData["token"].(string)
 	email := inputData["email"].(string)
@@ -101,6 +102,10 @@ func fbLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
 		"IsValid": fbData.Data.IsValid,
 	}).Debugln("Successfully verified FB access token validity")
 
+	if !fbData.Data.IsValid {
+		return nil, fmt.Errorf("Facebook access token is invalid")
+	}
+
 	// Find user, return their basic info with roles in jwt
 	user := loginOrCreateUser(p, &models.User{
 		Email:    email,
@@ -112,7 +117,7 @@ func fbLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
 }
 
 func loginOrCreateUser(p graphql.ResolveParams, userToLogin *models.User) models.User {
-	db := GetDB(p.Context)
+	db, _ := middleware.GetDB(p.Context)
 
 	var u models.User
 

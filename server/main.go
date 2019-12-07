@@ -21,6 +21,7 @@ import (
 	"github.com/maxbrain0/react-go-graphql/server/database"
 	"github.com/maxbrain0/react-go-graphql/server/gql"
 	"github.com/maxbrain0/react-go-graphql/server/logger"
+	"github.com/maxbrain0/react-go-graphql/server/middleware"
 	"github.com/sirupsen/logrus"
 )
 
@@ -91,7 +92,7 @@ func main() {
 	defer d.DB.Close()
 
 	// setup auth config for login queries and mutations
-	authConfig := config.Auth{}
+	authConfig := &config.Auth{}
 
 	authConfig.Load()
 
@@ -104,7 +105,7 @@ func main() {
 	})
 
 	// use middleware which gets request headers and injects db
-	http.Handle("/graphql", gql.HTTPMiddleware(gql.MiddlewareConfig{
+	http.Handle("/graphql", middleware.HTTPMiddleware(middleware.Config{
 		GQLHandler: h,
 		DB:         d.DB,
 		E:          e,
