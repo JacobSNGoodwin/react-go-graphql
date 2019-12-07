@@ -68,7 +68,7 @@ func googleLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
 		return err, nil
 	}
 
-	return user.ID, nil
+	return user, nil
 }
 
 // fbLoginWithToken is a helper function to verify the validity of the access token provided by FB
@@ -125,5 +125,5 @@ func fbLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
 		return err, nil
 	}
 
-	return user.ID, nil
+	return user, nil
 }

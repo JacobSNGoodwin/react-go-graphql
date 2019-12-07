@@ -27,6 +27,10 @@ var userType = graphql.NewObject(graphql.ObjectConfig{
 			Type:        graphql.NewNonNull(graphql.String),
 			Description: "Holds the user's unique email address",
 		},
+		"imageUri": &graphql.Field{
+			Type:        graphql.NewNonNull(graphql.String),
+			Description: "Holds the user's image Uri, if any",
+		},
 	},
 })
 
