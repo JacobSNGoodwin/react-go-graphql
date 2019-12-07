@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/graphql-go/graphql"
+	"github.com/maxbrain0/react-go-graphql/server/models"
 	"github.com/sirupsen/logrus"
 )
 
@@ -57,9 +58,13 @@ func googleLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
 	}).Debugln("Successfully verified Google ID Token")
 
 	// Find user, return their basic info with roles in jwt
-	// db, ok := GetDB(p.Context)
+	user := loginOrCreateUser(p, &models.User{
+		Email:    claims.Email,
+		Name:     claims.Name,
+		ImageURI: claims.Picture,
+	})
 
-	return true, nil
+	return user.ID, nil
 }
 
 // fbLoginWithToken is a helper function to verify the validity of the access token provided by FB
@@ -69,13 +74,13 @@ func fbLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
 	auth := GetAuth(p.Context)
 	inputData := p.Args["fbLoginData"].(map[string]interface{})
 	inputToken := inputData["token"].(string)
-	// email := inputData["email"].(string)
-	// name := inputData["name"].(string)
-	// imageURI := inputData["imageUri"].(string)
+	email := inputData["email"].(string)
+	name := inputData["name"].(string)
+	imageURI := inputData["imageUri"].(string)
 
 	appToken := auth.FBAccessToken
 
-	ctxLogger.WithField("Token", inputToken).Debugln("Input token received as argument")
+	// ctxLogger.WithField("Token", inputToken).Debugln("Input token received as argument")
 
 	// verify Facebook user at prescribed endpoint
 	fbUserReqURL := fmt.Sprintf("https://graph.facebook.com/debug_token?input_token=%s&access_token=%s",
@@ -99,5 +104,25 @@ func fbLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
 		"IsValid": fbData.Data.IsValid,
 	}).Debugln("Successfully verified FB access token validity")
 
-	return fbData.Data.IsValid, nil
+	// Find user, return their basic info with roles in jwt
+	user := loginOrCreateUser(p, &models.User{
+		Email:    email,
+		Name:     name,
+		ImageURI: imageURI,
+	})
+
+	return user.ID, nil
+}
+
+func loginOrCreateUser(p graphql.ResolveParams, userToLogin *models.User) models.User {
+	db := GetDB(p.Context)
+
+	var u models.User
+
+	// Add error checking
+	db.
+		Where(models.User{Email: userToLogin.Email}).
+		Attrs(models.User{Name: userToLogin.Name, ImageURI: userToLogin.ImageURI}).
+		FirstOrCreate(&u)
+	return u
 }

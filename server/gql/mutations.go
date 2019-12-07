@@ -9,7 +9,7 @@ var RootMutation = graphql.NewObject(graphql.ObjectConfig{
 	Name: "RootMutation",
 	Fields: graphql.Fields{
 		"googleLoginWithToken": &graphql.Field{
-			Type:        graphql.Boolean,
+			Type:        graphql.String,
 			Description: "Receives an id_token from a client-side login to Google. The mutation check",
 			Args: graphql.FieldConfigArgument{
 				"idToken": &graphql.ArgumentConfig{
@@ -19,7 +19,7 @@ var RootMutation = graphql.NewObject(graphql.ObjectConfig{
 			Resolve: googleLoginWithToken,
 		},
 		"fbLoginWithToken": &graphql.Field{
-			Type:        graphql.Boolean,
+			Type:        graphql.String,
 			Description: "Receives an access_token from a client-side login to Facebook, and checks with FB that this is a valid token. If so, a jwt is returned as a string",
 			Args: graphql.FieldConfigArgument{
 				"fbLoginData": &graphql.ArgumentConfig{
