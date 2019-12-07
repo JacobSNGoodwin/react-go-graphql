@@ -17,14 +17,11 @@ var fbClient = &http.Client{
 
 // FBVerificationResponse used for getting json data response for validating respons
 type FBVerificationResponse struct {
-	Data FBVerificationData `json:"data"`
-}
-
-// FBVerificationData holds data used in verifying token
-type FBVerificationData struct {
-	IsValid             bool `json:"is_valid"`
-	DataAccessExpiresAt int  `json:"data_access_expires_at"`
-	ExpiresAt           int  `json:"expires_at"`
+	Data struct {
+		IsValid             bool `json:"is_valid"`
+		DataAccessExpiresAt int  `json:"data_access_expires_at"`
+		ExpiresAt           int  `json:"expires_at"`
+	} `json:"data"`
 }
 
 // GoogleIDClaims holds data from Google ID token
