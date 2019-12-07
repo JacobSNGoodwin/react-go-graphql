@@ -55,12 +55,18 @@ func googleLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
 		"Picture": claims.Picture,
 	}).Debugln("Successfully verified Google ID Token")
 
-	// Find user, return their basic info with roles in jwt
-	user := loginOrCreateUser(p, &models.User{
+	user := models.User{
 		Email:    claims.Email,
 		Name:     claims.Name,
 		ImageURI: claims.Picture,
-	})
+	}
+
+	loginErr := user.LoginOrCreate(p)
+
+	if loginErr != nil {
+		ctxLogger.WithField("Email", user.Email).Warn("Unable to login user")
+		return err, nil
+	}
 
 	return user.ID, nil
 }
@@ -106,25 +112,18 @@ func fbLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
 		return nil, fmt.Errorf("Facebook access token is invalid")
 	}
 
-	// Find user, return their basic info with roles in jwt
-	user := loginOrCreateUser(p, &models.User{
+	user := models.User{
 		Email:    email,
 		Name:     name,
 		ImageURI: imageURI,
-	})
+	}
+
+	loginErr := user.LoginOrCreate(p)
+
+	if loginErr != nil {
+		ctxLogger.WithField("Email", user.Email).Warn("Unable to login user")
+		return err, nil
+	}
 
 	return user.ID, nil
-}
-
-func loginOrCreateUser(p graphql.ResolveParams, userToLogin *models.User) models.User {
-	db, _ := middleware.GetDB(p.Context)
-
-	var u models.User
-
-	// Add error checking
-	db.
-		Where(models.User{Email: userToLogin.Email}).
-		Attrs(models.User{Name: userToLogin.Name, ImageURI: userToLogin.ImageURI}).
-		FirstOrCreate(&u)
-	return u
 }
