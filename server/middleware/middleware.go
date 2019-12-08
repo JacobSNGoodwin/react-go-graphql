@@ -35,10 +35,7 @@ func HTTPMiddleware(c Config) http.Handler {
 		ctx = context.WithValue(ctx, contextKeyDB, c.DB)
 		ctx = context.WithValue(ctx, contextKeyAuth, c.AUTH)
 
-		wRef := &w
-
-		ctxLogger.Debugf("The value of wRef passed into context: %v\n", wRef)
-		ctx = context.WithValue(ctx, contextKeyWriter, wRef)
+		ctx = context.WithValue(ctx, contextKeyWriter, &w)
 		c.GQLHandler.ContextHandler(ctx, w, r)
 	})
 }

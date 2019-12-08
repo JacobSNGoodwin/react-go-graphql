@@ -43,8 +43,6 @@ var RootQuery = graphql.NewObject(graphql.ObjectConfig{
 
 				wRef := middleware.GetWriter(p.Context)
 
-				ctxLogger.Debugf("The value of wRef received in resolver: %v\n", wRef)
-
 				http.SetCookie(*wRef, &http.Cookie{
 					Name:     "CookieFromUsers",
 					Value:    "ValueFromUsers",
