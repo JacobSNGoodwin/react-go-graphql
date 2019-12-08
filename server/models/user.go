@@ -16,7 +16,7 @@ type User struct {
 // LoginOrCreate takes the current user and logs them in if they exist.
 // It creates the user if the user doesn't yet exist
 func (u *User) LoginOrCreate(p graphql.ResolveParams) error {
-	db, _ := middleware.GetDB(p.Context)
+	db := middleware.GetDB(p.Context)
 
 	// Add error checking
 	if err := db.

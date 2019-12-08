@@ -16,6 +16,7 @@ type contextKey string
 const contextKeyHeader = contextKey("header")
 const contextKeyDB = contextKey("db")
 const contextKeyAuth = contextKey("auth")
+const contextKeyWriter = contextKey("writer")
 
 var ctxLogger = logger.CtxLogger
 
@@ -33,37 +34,31 @@ func HTTPMiddleware(c Config) http.Handler {
 		ctx := context.WithValue(r.Context(), contextKeyHeader, r.Header)
 		ctx = context.WithValue(ctx, contextKeyDB, c.DB)
 		ctx = context.WithValue(ctx, contextKeyAuth, c.AUTH)
+
+		wRef := &w
+
+		ctxLogger.Debugf("The value of wRef passed into context: %v\n", wRef)
+		ctx = context.WithValue(ctx, contextKeyWriter, wRef)
 		c.GQLHandler.ContextHandler(ctx, w, r)
 	})
 }
 
 // GetHeader returns the header as a strgin
-func GetHeader(ctx context.Context) (http.Header, bool) {
-	header, ok := ctx.Value(contextKeyHeader).(http.Header)
-
-	if !ok {
-		ctxLogger.Warningln("Unable to get Header key in HTTPMiddleware")
-	}
-
-	return header, ok
+func GetHeader(ctx context.Context) http.Header {
+	return ctx.Value(contextKeyHeader).(http.Header)
 }
 
 // GetDB retrieves gorm connection from context
-func GetDB(ctx context.Context) (*gorm.DB, bool) {
-	db, ok := ctx.Value(contextKeyDB).(*gorm.DB)
-
-	if !ok {
-		ctxLogger.Warningln("Unable to get DB key in HTTPMiddleware")
-	}
-	return db, ok
+func GetDB(ctx context.Context) *gorm.DB {
+	return ctx.Value(contextKeyDB).(*gorm.DB)
 }
 
 // GetAuth loads a map with key strings to the oauth2 provider and values containing oauth2.config
-func GetAuth(ctx context.Context) (*config.Auth, bool) {
-	config, ok := ctx.Value(contextKeyAuth).(*config.Auth)
+func GetAuth(ctx context.Context) *config.Auth {
+	return ctx.Value(contextKeyAuth).(*config.Auth)
+}
 
-	if !ok {
-		ctxLogger.Warningln("Unable to get Auth key in HTTPMiddleware")
-	}
-	return config, ok
+// GetWriter retrieves the http.ResponseWriter from the current context
+func GetWriter(ctx context.Context) *http.ResponseWriter {
+	return ctx.Value(contextKeyWriter).(*http.ResponseWriter)
 }
