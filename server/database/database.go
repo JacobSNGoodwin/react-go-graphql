@@ -38,17 +38,21 @@ func (d *Database) Connect() {
 // Init assures tables for provided models are available and initialized a couple of users and roles
 func (d *Database) Init() {
 	d.DB.AutoMigrate(&models.User{})
+	d.DB.AutoMigrate(&models.Role{})
 
-	// var admin models.Role
-	// var editor models.Role
 	var user1 models.User
 
 	// Create users
 	d.DB.FirstOrCreate(&user1, models.User{
 		Name:     "Jacob",
 		Email:    "jacob.goodwin@gmail.com",
-		ImageURI: "",
-	})
+		ImageURI: "https://lh3.googleusercontent.com/a-/AAuE7mCsAHdorySC7ttxiSQOx7xtcUHhMwX6LlJwDT65LsE=s96-c",
+	}).Association("Roles").
+		Clear().
+		Append(
+			&models.Role{Name: models.CreatorRole},
+			&models.Role{Name: models.EditorRole},
+		)
 
 	// seems hwe have to do it this way for back ref
 	// d.DB.Model(&user1).Association("Roles").Append([]models.Role{admin, editor})
@@ -56,5 +60,6 @@ func (d *Database) Init() {
 		"id":        user1.ID,
 		"Name":      user1.Name,
 		"UpdatedAt": user1.UpdatedAt,
+		"Roles":     user1.Roles,
 	}).Debug("Created or found user")
 }
