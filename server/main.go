@@ -11,8 +11,6 @@ import (
 	"syscall"
 	"time"
 
-	casbin "github.com/casbin/casbin/v2"
-	gormadapter "github.com/casbin/gorm-adapter/v2"
 	"github.com/graphql-go/graphql"
 	"github.com/graphql-go/handler"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
@@ -76,19 +74,7 @@ func main() {
 		"dbname": dbName,
 	}).Info("Connection to Postgres DB established")
 
-	a, err := gormadapter.NewAdapterByDB(d.DB)
-
-	if err != nil {
-		ctxLogger.Fatalf("Unable to connect gorm adapter: %v", err.Error())
-	}
-
-	e, err := casbin.NewEnforcer("config/rbac_model.conf", a)
-
-	if err != nil {
-		ctxLogger.Fatalf("Unable to setup casbin config: %v", err.Error())
-	}
-
-	d.Init(e)
+	d.Init()
 	defer d.DB.Close()
 
 	// setup auth config for login queries and mutations
@@ -108,7 +94,6 @@ func main() {
 	http.Handle("/graphql", middleware.HTTPMiddleware(middleware.Config{
 		GQLHandler: h,
 		DB:         d.DB,
-		E:          e,
 		AUTH:       authConfig,
 	}))
 

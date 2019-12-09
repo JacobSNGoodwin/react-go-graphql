@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/casbin/casbin/v2"
 	"github.com/jinzhu/gorm"
 	"github.com/maxbrain0/react-go-graphql/server/logger"
 	"github.com/maxbrain0/react-go-graphql/server/models"
@@ -37,7 +36,7 @@ func (d *Database) Connect() {
 }
 
 // Init assures tables for provided models are available and initialized a couple of users and roles
-func (d *Database) Init(e *casbin.Enforcer) {
+func (d *Database) Init() {
 	d.DB.AutoMigrate(&models.User{})
 
 	// var admin models.Role
@@ -58,12 +57,4 @@ func (d *Database) Init(e *casbin.Enforcer) {
 		"Name":      user1.Name,
 		"UpdatedAt": user1.UpdatedAt,
 	}).Debug("Created or found user")
-
-	e.AddRoleForUser(user1.Email, "Admin")
-	e.AddRoleForUser(user1.Email, "Edit")
-
-	e.AddPolicy("Admin", "path", "write")
-	e.AddPolicy("Admin", "path", "read")
-
-	e.AddPolicy("Edit", "path", "read")
 }

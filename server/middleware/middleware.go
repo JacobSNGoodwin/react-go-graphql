@@ -4,7 +4,6 @@ import (
 	"context"
 	"net/http"
 
-	casbin "github.com/casbin/casbin/v2"
 	"github.com/graphql-go/handler"
 	"github.com/jinzhu/gorm"
 	"github.com/maxbrain0/react-go-graphql/server/config"
@@ -24,7 +23,6 @@ var ctxLogger = logger.CtxLogger
 type Config struct {
 	GQLHandler *handler.Handler
 	DB         *gorm.DB
-	E          *casbin.Enforcer
 	AUTH       *config.Auth
 }
 
