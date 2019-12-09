@@ -16,6 +16,7 @@ func users(p graphql.ResolveParams) (interface{}, error) {
 			Order("email").
 			Limit(p.Args["limit"].(int)).
 			Offset(p.Args["offset"].(int)).
+			Preload("Roles").
 			Find(&users); result.Error != nil {
 		return nil, nil
 	}
@@ -29,6 +30,7 @@ func user(p graphql.ResolveParams) (interface{}, error) {
 
 	// Find by uuid or email, which should both be unique
 	if result := db.
+		Preload("Roles").
 		Where("id = ?", uuid.FromStringOrNil(p.Args["id"].(string))).
 		Find(&user); result.Error != nil {
 		return nil, nil
@@ -38,7 +40,15 @@ func user(p graphql.ResolveParams) (interface{}, error) {
 		"ID":    user.ID,
 		"Email": user.Email,
 		"Name":  user.Name,
-	}).Debug("Found user by id or email")
+		"Roles": user.Roles,
+	}).Debugln("Found user by id")
+
+	for _, role := range user.Roles {
+		ctxLogger.WithFields(logrus.Fields{
+			"ID":   role.ID,
+			"Name": role.Name,
+		}).Debugln("User Roles")
+	}
 
 	return user, nil
 }

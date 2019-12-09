@@ -31,6 +31,33 @@ var userType = graphql.NewObject(graphql.ObjectConfig{
 			Type:        graphql.NewNonNull(graphql.String),
 			Description: "Holds the user's image Uri, if any",
 		},
+		"roles": &graphql.Field{
+			Type:        graphql.NewList(roleEnum),
+			Description: "Holds a list of roles for the user",
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				roles := []string{}
+				if user, ok := p.Source.(models.User); ok {
+					for _, role := range user.Roles {
+						roles = append(roles, role.Name)
+					}
+					return roles, nil
+				}
+				return nil, nil
+			},
+		},
+	},
+})
+
+var roleEnum = graphql.NewEnum(graphql.EnumConfig{
+	Name:        "Role",
+	Description: "Holds the roles available for this API",
+	Values: graphql.EnumValueConfigMap{
+		"Creator": &graphql.EnumValueConfig{
+			Value: "creator",
+		},
+		"Editor": &graphql.EnumValueConfig{
+			Value: "editor",
+		},
 	},
 })
 
