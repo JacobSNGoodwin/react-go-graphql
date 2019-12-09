@@ -40,26 +40,45 @@ func (d *Database) Init() {
 	d.DB.AutoMigrate(&models.User{})
 	d.DB.AutoMigrate(&models.Role{})
 
+	var creator models.Role
+	var editor models.Role
 	var user1 models.User
+
+	// create two roles for first user
+	d.DB.FirstOrCreate(&creator, models.Role{
+		Name: models.CreatorRole,
+	})
+
+	ctxLogger.WithFields(logrus.Fields{
+		"id":        creator.ID,
+		"Name":      creator.Name,
+		"UpdatedAt": creator.UpdatedAt,
+	}).Debugln("Created or found role")
+
+	d.DB.FirstOrCreate(&editor, models.Role{
+		Name: models.EditorRole,
+	})
+
+	ctxLogger.WithFields(logrus.Fields{
+		"id":        editor.ID,
+		"Name":      editor.Name,
+		"UpdatedAt": editor.UpdatedAt,
+	}).Debugln("Created or found role")
 
 	// Create users
 	d.DB.FirstOrCreate(&user1, models.User{
 		Name:     "Jacob",
 		Email:    "jacob.goodwin@gmail.com",
 		ImageURI: "https://lh3.googleusercontent.com/a-/AAuE7mCsAHdorySC7ttxiSQOx7xtcUHhMwX6LlJwDT65LsE=s96-c",
-	}).Association("Roles").
-		Clear().
-		Append(
-			&models.Role{Name: models.CreatorRole},
-			&models.Role{Name: models.EditorRole},
-		)
+	})
 
 	// seems hwe have to do it this way for back ref
-	// d.DB.Model(&user1).Association("Roles").Append([]models.Role{admin, editor})
+	d.DB.Model(&user1).Association("Roles").Append([]models.Role{creator, editor})
+
 	ctxLogger.WithFields(logrus.Fields{
 		"id":        user1.ID,
 		"Name":      user1.Name,
 		"UpdatedAt": user1.UpdatedAt,
 		"Roles":     user1.Roles,
-	}).Debug("Created or found user")
+	}).Debugln("Created or found user")
 }
