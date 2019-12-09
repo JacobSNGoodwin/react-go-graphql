@@ -1,8 +1,14 @@
 package models
 
 import (
+	"net/http"
+	"os"
+	"time"
+
+	"github.com/dgrijalva/jwt-go"
 	"github.com/graphql-go/graphql"
 	"github.com/maxbrain0/react-go-graphql/server/middleware"
+	uuid "github.com/satori/go.uuid"
 )
 
 // User holds user information and role
@@ -14,6 +20,12 @@ type User struct {
 	Roles    []*Role `json:"roles" gorm:"many2many:user_roles"`
 }
 
+type userClaims struct {
+	ID    uuid.UUID `json:"id" gorm:"type:uuid;primary_key;"`
+	Roles []*Role   `json:"roles" gorm:"many2many:user_roles"`
+	jwt.StandardClaims
+}
+
 // LoginOrCreate takes the current user and logs them in if they exist.
 // It creates the user if the user doesn't yet exist
 func (u *User) LoginOrCreate(p graphql.ResolveParams) error {
@@ -21,10 +33,52 @@ func (u *User) LoginOrCreate(p graphql.ResolveParams) error {
 
 	// Add error checking
 	if err := db.
+		Preload("Roles").
 		Where(User{Email: u.Email}).
 		Attrs(User{Name: u.Name, ImageURI: u.ImageURI}).
 		FirstOrCreate(&u).Error; err != nil {
 		return err
 	}
+
+	if err := createAndSendToken(p, u); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func createAndSendToken(p graphql.ResolveParams, u *User) error {
+	currentTime := time.Now()
+	expiryTime := currentTime.Add(time.Minute * 60)
+	// create and sign the token
+	claims := userClaims{
+		ID:    u.ID,
+		Roles: u.Roles,
+		StandardClaims: jwt.StandardClaims{
+			Issuer:    "graphql.demo",
+			IssuedAt:  currentTime.Unix(),
+			ExpiresAt: expiryTime.Unix(),
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	ss, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
+
+	if err != nil {
+		return err
+	}
+
+	// send token to user httpOnlyCookie, secure if env is production
+	w := middleware.GetWriter(p.Context)
+
+	http.SetCookie(*w, &http.Cookie{
+		Name:     "gqldemo_userinfo",
+		Value:    ss,
+		Expires:  expiryTime,
+		HttpOnly: true,
+		Secure:   os.Getenv("APP_ENV") == "prod",
+	})
+
 	return nil
 }

@@ -64,7 +64,10 @@ func googleLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
 	loginErr := user.LoginOrCreate(p)
 
 	if loginErr != nil {
-		ctxLogger.WithField("Email", user.Email).Warn("Unable to login user")
+		ctxLogger.WithFields(logrus.Fields{
+			"Email":   user.Email,
+			"Message": loginErr,
+		}).Warn("Unable to login user")
 		return err, nil
 	}
 
@@ -121,9 +124,14 @@ func fbLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
 	loginErr := user.LoginOrCreate(p)
 
 	if loginErr != nil {
-		ctxLogger.WithField("Email", user.Email).Warn("Unable to login user")
+		ctxLogger.WithFields(logrus.Fields{
+			"Email":   user.Email,
+			"Message": loginErr,
+		}).Warn("Unable to login user")
 		return err, nil
 	}
+
+	// create jwt and send cookie
 
 	return user, nil
 }

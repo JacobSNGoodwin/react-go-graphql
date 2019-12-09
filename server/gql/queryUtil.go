@@ -45,8 +45,9 @@ func user(p graphql.ResolveParams) (interface{}, error) {
 
 	for _, role := range user.Roles {
 		ctxLogger.WithFields(logrus.Fields{
-			"ID":   role.ID,
-			"Name": role.Name,
+			"UserID":   user.ID,
+			"RoleID":   role.ID,
+			"RoleName": role.Name,
 		}).Debugln("User Roles")
 	}
 
