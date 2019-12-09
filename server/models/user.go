@@ -22,7 +22,7 @@ type User struct {
 
 type userClaims struct {
 	ID    uuid.UUID `json:"id" gorm:"type:uuid;primary_key;"`
-	Roles []*Role   `json:"roles" gorm:"many2many:user_roles"`
+	Roles []string  `json:"roles" gorm:"many2many:user_roles"`
 	jwt.StandardClaims
 }
 
@@ -50,10 +50,17 @@ func (u *User) LoginOrCreate(p graphql.ResolveParams) error {
 func createAndSendToken(p graphql.ResolveParams, u *User) error {
 	currentTime := time.Now()
 	expiryTime := currentTime.Add(time.Minute * 60)
+
+	// map []user.Role to []string with Role.Name only
+	var roles []string
+	for _, role := range u.Roles {
+		roles = append(roles, role.Name)
+	}
+
 	// create and sign the token
 	claims := userClaims{
 		ID:    u.ID,
-		Roles: u.Roles,
+		Roles: roles,
 		StandardClaims: jwt.StandardClaims{
 			Issuer:    "graphql.demo",
 			IssuedAt:  currentTime.Unix(),
