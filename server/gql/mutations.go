@@ -22,7 +22,7 @@ var RootMutation = graphql.NewObject(graphql.ObjectConfig{
 			Type:        userType,
 			Description: "Receives an access_token from a client-side login to Facebook, and checks with FB that this is a valid token.",
 			Args: graphql.FieldConfigArgument{
-				"fbLoginData": &graphql.ArgumentConfig{
+				"accessToken": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(graphql.String),
 				},
 			},

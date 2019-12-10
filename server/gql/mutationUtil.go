@@ -28,6 +28,17 @@ type FBVerificationResponse struct {
 	} `json:"data"`
 }
 
+// FBUserResponse holds profile information used for creating initial user on our site
+type FBUserResponse struct {
+	Email   string `json:"email"`
+	Name    string `json:"name"`
+	Picture struct {
+		Data struct {
+			URL string `json:"url"`
+		} `json:"data"`
+	} `json:"picture"`
+}
+
 // GoogleIDClaims holds data from Google ID token
 type GoogleIDClaims struct {
 	Email   string `json:"email"`
@@ -46,7 +57,7 @@ func googleLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
 		return false, err
 	}
 
-	var claims = new(GoogleIDClaims)
+	var claims GoogleIDClaims
 
 	if err := idToken.Claims(&claims); err != nil {
 		return nil, err
@@ -79,58 +90,63 @@ func googleLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
 
 // fbLoginWithToken is a helper function to verify the validity of the access token provided by FB
 // this token is not the same as the ID token. We also verify this token with FB via and http req
-//Therefore, we receive email, name, and picture as parameters to this mutation
 func fbLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
 	auth := middleware.GetAuth(p.Context)
-	inputData := p.Args["fbLoginData"].(map[string]interface{})
-	inputToken := inputData["token"].(string)
-	email := inputData["email"].(string)
-	userID := inputData["userID"].(string)
-	name := inputData["name"].(string)
-	imageURI := inputData["imageUri"].(string)
-
+	userToken := p.Args["accessToken"].(string)
 	appToken := auth.FBAccessToken
 
-	// ctxLogger.WithField("Token", inputToken).Debugln("Input token received as argument")
-
 	// verify Facebook user at prescribed endpoint
-	fbUserReqURL := fmt.Sprintf("https://graph.facebook.com/debug_token?input_token=%s&access_token=%s",
-		inputToken,
+	fbTokenReqURL := fmt.Sprintf("https://graph.facebook.com/debug_token?input_token=%s&access_token=%s",
+		userToken,
 		appToken,
 	)
 
-	ctxLogger.Debug(fbUserReqURL)
-
-	resp, err := fbClient.Get(fbUserReqURL)
+	respToken, err := fbClient.Get(fbTokenReqURL)
 
 	if err != nil {
 		return nil, err
 	}
 
-	defer resp.Body.Close()
+	var fbTokenData FBVerificationResponse
 
-	var fbData FBVerificationResponse
-
-	json.NewDecoder(resp.Body).Decode(&fbData)
+	json.NewDecoder(respToken.Body).Decode(&fbTokenData)
 
 	ctxLogger.WithFields(logrus.Fields{
-		"IsValid": fbData.Data.IsValid,
+		"IsValid": fbTokenData.Data.IsValid,
 	}).Debugln("Successfully verified FB access token validity")
 
 	// make sure token is Valid
-	if !fbData.Data.IsValid {
-		return nil, fmt.Errorf("Facebook access token is invalid")
+	if !fbTokenData.Data.IsValid || (os.Getenv("FACEBOOK_CLIENT_ID") != fbTokenData.Data.AppID) {
+		return nil, fmt.Errorf("Facebook access token is invalid for this application")
 	}
 
-	// make sure token belongs to user trying to login and app
-	if (userID != fbData.Data.UserID) || (os.Getenv("FACEBOOK_CLIENT_ID") != fbData.Data.AppID) {
-		return nil, fmt.Errorf("Access token is invalid for supplied user and for this application")
+	respToken.Body.Close()
+
+	// verify the user
+	fbUserReqURL := fmt.Sprintf("https://graph.facebook.com/v5.0/me?fields=name,email,picture{url}&access_token=%v",
+		userToken,
+	)
+
+	respUser, err := fbClient.Get(fbUserReqURL)
+	if err != nil {
+		return nil, err
 	}
+
+	defer respUser.Body.Close()
+
+	var fbUserData FBUserResponse
+	json.NewDecoder(respUser.Body).Decode(&fbUserData)
+
+	ctxLogger.WithFields(logrus.Fields{
+		"Email":    fbUserData.Email,
+		"Name":     fbUserData.Name,
+		"ImageUri": fbUserData.Picture.Data.URL,
+	}).Debugln("Successfully retrieved FB user for token")
 
 	user := models.User{
-		Email:    email,
-		Name:     name,
-		ImageURI: imageURI,
+		Email:    fbUserData.Email,
+		Name:     fbUserData.Name,
+		ImageURI: fbUserData.Picture.Data.URL,
 	}
 
 	loginErr := user.LoginOrCreate(p)
