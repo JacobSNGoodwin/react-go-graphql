@@ -74,6 +74,10 @@ var fbLoginType = graphql.NewInputObject(graphql.InputObjectConfig{
 			Type:        graphql.NewNonNull(graphql.String),
 			Description: "The full name as provided in the name field by client-side Login with Facebook",
 		},
+		"userID": &graphql.InputObjectFieldConfig{
+			Type:        graphql.NewNonNull(graphql.String),
+			Description: "The user id provided by the client-side Login with Facebook",
+		},
 		"email": &graphql.InputObjectFieldConfig{
 			Type:        graphql.NewNonNull(graphql.String),
 			Description: "The full name as provided in the name field by client-side Login with Facebook",

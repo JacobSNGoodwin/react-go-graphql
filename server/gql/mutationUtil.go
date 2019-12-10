@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/graphql-go/graphql"
@@ -19,9 +20,11 @@ var fbClient = &http.Client{
 // FBVerificationResponse used for getting json data response for validating respons
 type FBVerificationResponse struct {
 	Data struct {
-		IsValid             bool `json:"is_valid"`
-		DataAccessExpiresAt int  `json:"data_access_expires_at"`
-		ExpiresAt           int  `json:"expires_at"`
+		IsValid             bool   `json:"is_valid"`
+		AppID               string `json:"app_id"`
+		UserID              string `json:"user_id"`
+		DataAccessExpiresAt int    `json:"data_access_expires_at"`
+		ExpiresAt           int    `json:"expires_at"`
 	} `json:"data"`
 }
 
@@ -82,6 +85,7 @@ func fbLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
 	inputData := p.Args["fbLoginData"].(map[string]interface{})
 	inputToken := inputData["token"].(string)
 	email := inputData["email"].(string)
+	userID := inputData["userID"].(string)
 	name := inputData["name"].(string)
 	imageURI := inputData["imageUri"].(string)
 
@@ -103,7 +107,7 @@ func fbLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
 
 	defer resp.Body.Close()
 
-	fbData := new(FBVerificationResponse)
+	var fbData FBVerificationResponse
 
 	json.NewDecoder(resp.Body).Decode(&fbData)
 
@@ -111,8 +115,14 @@ func fbLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
 		"IsValid": fbData.Data.IsValid,
 	}).Debugln("Successfully verified FB access token validity")
 
+	// make sure token is Valid
 	if !fbData.Data.IsValid {
 		return nil, fmt.Errorf("Facebook access token is invalid")
+	}
+
+	// make sure token belongs to user trying to login and app
+	if (userID != fbData.Data.UserID) || (os.Getenv("FACEBOOK_CLIENT_ID") != fbData.Data.AppID) {
+		return nil, fmt.Errorf("Access token is invalid for supplied user and for this application")
 	}
 
 	user := models.User{
