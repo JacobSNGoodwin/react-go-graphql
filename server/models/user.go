@@ -10,7 +10,6 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/graphql-go/graphql"
 	"github.com/maxbrain0/react-go-graphql/server/middleware"
-	uuid "github.com/satori/go.uuid"
 )
 
 // User holds user information and role
@@ -20,13 +19,6 @@ type User struct {
 	Email    string  `json:"email" gorm:"type:varchar(100);unique_index"`
 	ImageURI string  `json:"imageUri" gorm:"type:text"`
 	Roles    []*Role `json:"roles" gorm:"many2many:user_roles"`
-}
-
-type userClaims struct {
-	ID    uuid.UUID `json:"id"`
-	Email string    `json:"email"`
-	Roles []string  `json:"roles" gorm:"many2many:user_roles"`
-	jwt.StandardClaims
 }
 
 // LoginOrCreate takes the current user and logs them in if they exist.
@@ -61,10 +53,12 @@ func createAndSendToken(p graphql.ResolveParams, u *User) error {
 	}
 
 	// create and sign the token
-	claims := userClaims{
-		ID:    u.ID,
-		Email: u.Email,
-		Roles: roles,
+	claims := middleware.UserClaims{
+		UserInfo: middleware.UserInfo{
+			ID:    u.ID,
+			Email: u.Email,
+			Roles: roles,
+		},
 		StandardClaims: jwt.StandardClaims{
 			Issuer:    "graphql.demo",
 			IssuedAt:  currentTime.Unix(),
@@ -91,14 +85,14 @@ func createAndSendToken(p graphql.ResolveParams, u *User) error {
 	w := middleware.GetWriter(p.Context)
 
 	http.SetCookie(*w, &http.Cookie{
-		Name:    "gqldemo_userinfo",
+		Name:    "userinfo",
 		Value:   split[0] + "." + split[1],
 		Expires: expiryTime,
 		Secure:  os.Getenv("APP_ENV") == "prod",
 	})
 
 	http.SetCookie(*w, &http.Cookie{
-		Name:     "gqldemo_signature",
+		Name:     "signature",
 		Value:    split[2],
 		HttpOnly: true,
 		Secure:   os.Getenv("APP_ENV") == "prod",

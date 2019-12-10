@@ -48,7 +48,7 @@ type GoogleIDClaims struct {
 
 // googleLoginWithToken is a helper function to verify the validity of the id_token provided by Google
 func googleLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
-	auth := middleware.GetAuth(p.Context)
+	auth := middleware.GetAuthProviders(p.Context)
 	rawToken := p.Args["idToken"].(string)
 
 	idToken, err := auth.GoogleVerifier.Verify(p.Context, rawToken)
@@ -91,7 +91,7 @@ func googleLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
 // fbLoginWithToken is a helper function to verify the validity of the access token provided by FB
 // this token is not the same as the ID token. We also verify this token with FB via and http req
 func fbLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
-	auth := middleware.GetAuth(p.Context)
+	auth := middleware.GetAuthProviders(p.Context)
 	userToken := p.Args["accessToken"].(string)
 	appToken := auth.FBAccessToken
 
