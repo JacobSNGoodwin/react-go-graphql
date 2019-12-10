@@ -1,8 +1,10 @@
 package models
 
 import (
+	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -76,13 +78,26 @@ func createAndSendToken(p graphql.ResolveParams, u *User) error {
 		return err
 	}
 
+	// Split the signed string into two parts for using the two cookie approach
+	split := strings.Split(ss, ".")
+
+	if len(split) != 3 {
+		return fmt.Errorf("Unable to login User")
+	}
+
 	// send token to user httpOnlyCookie, secure if env is production
 	w := middleware.GetWriter(p.Context)
 
 	http.SetCookie(*w, &http.Cookie{
-		Name:     "gqldemo_userinfo",
-		Value:    ss,
-		Expires:  expiryTime,
+		Name:    "gqldemo_userinfo",
+		Value:   split[0] + "." + split[1],
+		Expires: expiryTime,
+		Secure:  os.Getenv("APP_ENV") == "prod",
+	})
+
+	http.SetCookie(*w, &http.Cookie{
+		Name:     "gqldemo_signature",
+		Value:    split[2],
 		HttpOnly: true,
 		Secure:   os.Getenv("APP_ENV") == "prod",
 	})

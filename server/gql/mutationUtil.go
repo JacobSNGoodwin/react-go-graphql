@@ -137,12 +137,6 @@ func fbLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
 	var fbUserData FBUserResponse
 	json.NewDecoder(respUser.Body).Decode(&fbUserData)
 
-	ctxLogger.WithFields(logrus.Fields{
-		"Email":    fbUserData.Email,
-		"Name":     fbUserData.Name,
-		"ImageUri": fbUserData.Picture.Data.URL,
-	}).Debugln("Successfully retrieved FB user for token")
-
 	user := models.User{
 		Email:    fbUserData.Email,
 		Name:     fbUserData.Name,
