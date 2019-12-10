@@ -44,7 +44,8 @@ func (u *User) LoginOrCreate(p graphql.ResolveParams) error {
 
 func createAndSendToken(p graphql.ResolveParams, u *User) error {
 	currentTime := time.Now()
-	expiryTime := currentTime.Add(time.Minute * 60)
+	tokenExpiryTime := currentTime.Add(time.Hour * 24)
+	cookieExpiryTime := currentTime.Add(time.Minute * 30)
 
 	// map []user.Role to []string with Role.Name only
 	var roles []string
@@ -62,7 +63,7 @@ func createAndSendToken(p graphql.ResolveParams, u *User) error {
 		StandardClaims: jwt.StandardClaims{
 			Issuer:    "graphql.demo",
 			IssuedAt:  currentTime.Unix(),
-			ExpiresAt: expiryTime.Unix(),
+			ExpiresAt: tokenExpiryTime.Unix(),
 		},
 	}
 
@@ -87,7 +88,7 @@ func createAndSendToken(p graphql.ResolveParams, u *User) error {
 	http.SetCookie(*w, &http.Cookie{
 		Name:    "userinfo",
 		Value:   split[0] + "." + split[1],
-		Expires: expiryTime,
+		Expires: cookieExpiryTime,
 		Secure:  os.Getenv("APP_ENV") == "prod",
 	})
 
