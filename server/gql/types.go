@@ -60,31 +60,3 @@ var roleEnum = graphql.NewEnum(graphql.EnumConfig{
 		},
 	},
 })
-
-// userType holds information for users
-var fbLoginType = graphql.NewInputObject(graphql.InputObjectConfig{
-	Name:        "FBLoginType",
-	Description: "Fields required for fbLoginWithToken",
-	Fields: graphql.InputObjectConfigFieldMap{
-		"token": &graphql.InputObjectFieldConfig{
-			Type:        graphql.NewNonNull(graphql.String),
-			Description: "The access token as a string provided by client-side Login with Facebook",
-		},
-		"name": &graphql.InputObjectFieldConfig{
-			Type:        graphql.NewNonNull(graphql.String),
-			Description: "The full name as provided in the name field by client-side Login with Facebook",
-		},
-		"userID": &graphql.InputObjectFieldConfig{
-			Type:        graphql.NewNonNull(graphql.String),
-			Description: "The user id provided by the client-side Login with Facebook",
-		},
-		"email": &graphql.InputObjectFieldConfig{
-			Type:        graphql.NewNonNull(graphql.String),
-			Description: "The full name as provided in the name field by client-side Login with Facebook",
-		},
-		"imageUri": &graphql.InputObjectFieldConfig{
-			Type:        graphql.String,
-			Description: "The image URI provided by client-side Login with Facebook",
-		},
-	},
-})

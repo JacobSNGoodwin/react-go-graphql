@@ -99,6 +99,8 @@ func fbLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
 		appToken,
 	)
 
+	ctxLogger.Debug(fbUserReqURL)
+
 	resp, err := fbClient.Get(fbUserReqURL)
 
 	if err != nil {
