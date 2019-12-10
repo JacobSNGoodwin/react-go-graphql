@@ -23,7 +23,8 @@ type User struct {
 }
 
 type userClaims struct {
-	ID    uuid.UUID `json:"id" gorm:"type:uuid;primary_key;"`
+	ID    uuid.UUID `json:"id"`
+	Email string    `json:"email"`
 	Roles []string  `json:"roles" gorm:"many2many:user_roles"`
 	jwt.StandardClaims
 }
@@ -62,6 +63,7 @@ func createAndSendToken(p graphql.ResolveParams, u *User) error {
 	// create and sign the token
 	claims := userClaims{
 		ID:    u.ID,
+		Email: u.Email,
 		Roles: roles,
 		StandardClaims: jwt.StandardClaims{
 			Issuer:    "graphql.demo",
