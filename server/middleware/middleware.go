@@ -3,8 +3,6 @@ package middleware
 import (
 	"context"
 	"net/http"
-	"os"
-	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/graphql-go/handler"
@@ -49,10 +47,10 @@ func HTTPMiddleware(c Config) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Get cookies and reconstruct token - verify token and append authorization roles to
 		// the req context
-		claims := authFromCookies(&w, r)
-		ctx := context.WithValue(r.Context(), contextKeyAuth, claims.UserInfo)
+		userInfo := userFromCookies(&w, r)
+		ctx := context.WithValue(r.Context(), contextKeyAuth, userInfo)
 
-		ctxLogger.WithField("Auth", claims.UserInfo).Debugln("UserInfo on context")
+		// ctxLogger.WithField("Auth", claims.UserInfo).Debugln("UserInfo on context")
 
 		// Configure DB and auth (for verifying tokens with google/fb)
 		ctx = context.WithValue(ctx, contextKeyHeader, r.Header)
@@ -61,6 +59,7 @@ func HTTPMiddleware(c Config) http.Handler {
 
 		// Configure response
 		ctx = context.WithValue(ctx, contextKeyWriter, &w)
+
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		c.GQLHandler.ContextHandler(ctx, w, r)
@@ -90,42 +89,4 @@ func GetAuthProviders(ctx context.Context) *config.Auth {
 // GetWriter retrieves the http.ResponseWriter from the current context
 func GetWriter(ctx context.Context) *http.ResponseWriter {
 	return ctx.Value(contextKeyWriter).(*http.ResponseWriter)
-}
-
-func authFromCookies(w *http.ResponseWriter, r *http.Request) *UserClaims {
-	// get cookie containing header/payload + cookie containing signature
-
-	// if error, we will not have auth data on requests and requests will fail
-	// to clarify, and parsing problems will result in empty authorization info
-	c1, err := r.Cookie("userinfo")
-	if err != nil {
-		return &UserClaims{}
-	}
-	c2, err := r.Cookie("signature")
-	if err != nil {
-		return &UserClaims{}
-	}
-
-	ts := c1.Value + "." + c2.Value
-
-	token, err := jwt.ParseWithClaims(ts, &UserClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(os.Getenv("JWT_SECRET")), nil
-	})
-
-	if err != nil {
-		ctxLogger.Debugln("Unable to parse jwt from string")
-		return &UserClaims{}
-	}
-
-	if claims, ok := token.Claims.(*UserClaims); ok && token.Valid {
-		// with valid auth, update header/payload cookie
-		c1.Expires = time.Now().Add(time.Minute * 30)
-		http.SetCookie(*w, c1)
-		return claims
-	}
-
-	// TODO - update cookie expiry here
-
-	ctxLogger.Debugln("Invalid jwt")
-	return &UserClaims{}
 }
