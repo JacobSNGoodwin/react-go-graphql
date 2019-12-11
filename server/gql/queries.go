@@ -27,8 +27,10 @@ var RootQuery = graphql.NewObject(graphql.ObjectConfig{
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				var users models.Users
-				err := users.GetAll(p)
-				return users, err
+				if err := users.GetAll(p); err != nil {
+					return nil, err
+				}
+				return users, nil
 			},
 		},
 		"user": &graphql.Field{
@@ -41,7 +43,13 @@ var RootQuery = graphql.NewObject(graphql.ObjectConfig{
 					DefaultValue: "",
 				},
 			},
-			Resolve: user,
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				var user models.User
+				if err := user.GetByID(p); err != nil {
+					return nil, err
+				}
+				return user, nil
+			},
 		},
 	},
 })

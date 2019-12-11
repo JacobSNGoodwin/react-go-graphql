@@ -2,8 +2,10 @@ package models
 
 import (
 	"fmt"
+
 	"github.com/graphql-go/graphql"
 	"github.com/maxbrain0/react-go-graphql/server/middleware"
+	uuid "github.com/satori/go.uuid"
 )
 
 // User holds user information and role
@@ -78,6 +80,26 @@ func (u *Users) GetAll(p graphql.ResolveParams) error {
 			Preload("Roles").
 			Find(&u); result.Error != nil {
 		return nil
+	}
+
+	return nil
+}
+
+// GetByID gets user from database based on the users ID
+func (u *User) GetByID(p graphql.ResolveParams) error {
+	db := middleware.GetDB(p.Context)
+	userInfo := middleware.GetAuth(p.Context)
+
+	if !userInfo.Roles.IsAdmin {
+		return fmt.Errorf("User is not authorized to view other users")
+	}
+
+	// Find by uuid or email, which should both be unique
+	if result := db.
+		Preload("Roles").
+		Where("id = ?", uuid.FromStringOrNil(p.Args["id"].(string))).
+		Find(&u); result.Error != nil {
+		return result.Error
 	}
 
 	return nil
