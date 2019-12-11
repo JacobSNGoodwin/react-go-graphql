@@ -3,6 +3,7 @@ package gql
 import (
 	"github.com/graphql-go/graphql"
 	"github.com/maxbrain0/react-go-graphql/server/logger"
+	"github.com/maxbrain0/react-go-graphql/server/models"
 )
 
 var ctxLogger = logger.CtxLogger
@@ -24,7 +25,11 @@ var RootQuery = graphql.NewObject(graphql.ObjectConfig{
 					DefaultValue: 0,
 				},
 			},
-			Resolve: users,
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				var users models.Users
+				err := users.GetAll(p)
+				return users, err
+			},
 		},
 		"user": &graphql.Field{
 			Type:        userType,

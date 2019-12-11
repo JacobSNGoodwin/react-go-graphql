@@ -40,19 +40,19 @@ func (d *Database) Init() {
 	d.DB.AutoMigrate(&models.User{})
 	d.DB.AutoMigrate(&models.Role{})
 
-	var creator models.Role
+	var admin models.Role
 	var editor models.Role
 	var user1 models.User
 
 	// create two roles for first user
-	d.DB.FirstOrCreate(&creator, models.Role{
-		Name: models.CreatorRole,
+	d.DB.FirstOrCreate(&admin, models.Role{
+		Name: models.AdminRole,
 	})
 
 	ctxLogger.WithFields(logrus.Fields{
-		"id":        creator.ID,
-		"Name":      creator.Name,
-		"UpdatedAt": creator.UpdatedAt,
+		"id":        admin.ID,
+		"Name":      admin.Name,
+		"UpdatedAt": admin.UpdatedAt,
 	}).Debugln("Created or found role")
 
 	d.DB.FirstOrCreate(&editor, models.Role{
@@ -73,7 +73,7 @@ func (d *Database) Init() {
 	})
 
 	// seems hwe have to do it this way for back ref
-	d.DB.Model(&user1).Association("Roles").Append([]models.Role{creator, editor})
+	d.DB.Model(&user1).Association("Roles").Append([]models.Role{admin, editor})
 
 	ctxLogger.WithFields(logrus.Fields{
 		"id":        user1.ID,

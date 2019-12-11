@@ -52,8 +52,8 @@ var roleEnum = graphql.NewEnum(graphql.EnumConfig{
 	Name:        "Role",
 	Description: "Holds the roles available for this API",
 	Values: graphql.EnumValueConfigMap{
-		"Creator": &graphql.EnumValueConfig{
-			Value: "creator",
+		"Admin": &graphql.EnumValueConfig{
+			Value: "admin",
 		},
 		"Editor": &graphql.EnumValueConfig{
 			Value: "editor",

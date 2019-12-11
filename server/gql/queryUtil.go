@@ -8,22 +8,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func users(p graphql.ResolveParams) (interface{}, error) {
-	db := middleware.GetDB(p.Context)
-	var users []models.User
-	if result :=
-		db.
-			Order("email").
-			Limit(p.Args["limit"].(int)).
-			Offset(p.Args["offset"].(int)).
-			Preload("Roles").
-			Find(&users); result.Error != nil {
-		return nil, nil
-	}
-
-	return users, nil
-}
-
 func user(p graphql.ResolveParams) (interface{}, error) {
 	db := middleware.GetDB(p.Context)
 	var user models.User

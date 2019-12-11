@@ -1,7 +1,7 @@
 package models
 
-// CreatorRole holds const value for creator
-const CreatorRole = "creator"
+// AdminRole holds const value for creator
+const AdminRole = "admin"
 
 // EditorRole holds const value for editor
 const EditorRole = "editor"
