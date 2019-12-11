@@ -51,5 +51,16 @@ var RootQuery = graphql.NewObject(graphql.ObjectConfig{
 				return user, nil
 			},
 		},
+		"me": &graphql.Field{
+			Type:        userType,
+			Description: "Returns user for currently logged-in user",
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				var user models.User
+				if err := user.GetCurrent(p); err != nil {
+					return nil, err
+				}
+				return user, nil
+			},
+		},
 	},
 })

@@ -104,3 +104,19 @@ func (u *User) GetByID(p graphql.ResolveParams) error {
 
 	return nil
 }
+
+// GetCurrent gets user from database based on the users ID
+func (u *User) GetCurrent(p graphql.ResolveParams) error {
+	db := middleware.GetDB(p.Context)
+	userInfo := middleware.GetAuth(p.Context)
+
+	// Find by uuid or email, which should both be unique
+	if result := db.
+		Preload("Roles").
+		Where("id = ?", userInfo.ID).
+		Find(&u); result.Error != nil {
+		return result.Error
+	}
+
+	return nil
+}
