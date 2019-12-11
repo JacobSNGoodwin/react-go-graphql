@@ -29,17 +29,11 @@ type Config struct {
 	AUTH       *config.Auth
 }
 
-// RolesMap used for convencience in determining simple roles system via a map
-type RolesMap struct {
-	IsAdmin  bool `json:"isAdmin"`
-	IsEditor bool `json:"isEditor"`
-}
-
 // UserInfo holds authorization info sent and received in jwt custom claims
 type UserInfo struct {
 	ID    uuid.UUID `json:"id"`
 	Email string    `json:"email"`
-	Roles RolesMap  `json:"roles" gorm:"many2many:user_roles"`
+	Roles []string  `json:"roles"`
 }
 
 // UserClaims used for creating and parsing JWTs

@@ -1,8 +1,6 @@
 package models
 
 import (
-	"fmt"
-
 	"github.com/graphql-go/graphql"
 	"github.com/maxbrain0/react-go-graphql/server/middleware"
 	uuid "github.com/satori/go.uuid"
@@ -36,18 +34,9 @@ func (u *User) LoginOrCreate(p graphql.ResolveParams) error {
 
 	w := middleware.GetWriter(p.Context)
 
-	roles := middleware.RolesMap{
-		IsAdmin:  false,
-		IsEditor: false,
-	}
-
+	var roles []string
 	for _, role := range u.Roles {
-		if role.Name == "admin" {
-			roles.IsAdmin = true
-		}
-		if role.Name == "editor" {
-			roles.IsEditor = true
-		}
+		roles = append(roles, role.Name)
 	}
 
 	userInfo := middleware.UserInfo{
@@ -66,11 +55,11 @@ func (u *User) LoginOrCreate(p graphql.ResolveParams) error {
 // GetAll returns a list of all users
 func (u *Users) GetAll(p graphql.ResolveParams) error {
 	db := middleware.GetDB(p.Context)
-	userInfo := middleware.GetAuth(p.Context)
+	// userInfo := middleware.GetAuth(p.Context)
 
-	if !userInfo.Roles.IsAdmin {
-		return fmt.Errorf("User is not authorized to view other users")
-	}
+	// if !userInfo.Roles.IsAdmin {
+	// 	return fmt.Errorf("User is not authorized to view other users")
+	// }
 
 	if result :=
 		db.
@@ -88,11 +77,11 @@ func (u *Users) GetAll(p graphql.ResolveParams) error {
 // GetByID gets user from database based on the users ID
 func (u *User) GetByID(p graphql.ResolveParams) error {
 	db := middleware.GetDB(p.Context)
-	userInfo := middleware.GetAuth(p.Context)
+	// userInfo := middleware.GetAuth(p.Context)
 
-	if !userInfo.Roles.IsAdmin {
-		return fmt.Errorf("User is not authorized to view other users")
-	}
+	// if !userInfo.Roles.IsAdmin {
+	// 	return fmt.Errorf("User is not authorized to view other users")
+	// }
 
 	// Find by uuid or email, which should both be unique
 	if result := db.
