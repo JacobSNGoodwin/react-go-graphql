@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -8,11 +9,11 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/maxbrain0/react-go-graphql/server/schema"
+	"github.com/go-redis/redis/v7"
 	uuid "github.com/satori/go.uuid"
 )
 
-func userFromCookies(w *http.ResponseWriter, r *http.Request) *User {
+func userFromCookies(w *http.ResponseWriter, r *http.Request, rc *redis.Client) *User {
 	// get cookie containing header/payload + cookie containing signature
 
 	// if error, we will not have auth data on requests and requests will fail
@@ -44,14 +45,27 @@ func userFromCookies(w *http.ResponseWriter, r *http.Request) *User {
 		return &User{}
 	}
 
+	val, err := rc.Get(claims.ID.String()).Result()
+
+	if err != nil {
+		ctxLogger.WithField("ID", claims.ID).Debugln("User not found in redis")
+		return &User{}
+	}
+
+	var u User
+	err = json.Unmarshal([]byte(val), &u)
+
+	if err != nil {
+		ctxLogger.WithField("ID", claims.ID).Debugln("Could not deserialize user")
+		return &User{}
+	}
+
+	// If all succeeeds, extend cookie for half an hour
+
 	c1.Expires = time.Now().Add(time.Minute * 30)
 	http.SetCookie(*w, c1)
 
-	return &User{
-		Base: schema.Base{
-			ID: claims.ID,
-		},
-	}
+	return &u
 }
 
 // CreateAndSendToken is a utility function for writing tokens

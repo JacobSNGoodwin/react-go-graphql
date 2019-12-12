@@ -42,7 +42,7 @@ func HTTPMiddleware(c Config) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Get cookies and reconstruct token - verify token and append authorization roles to
 		// the req context
-		ctxUser := userFromCookies(&w, r)
+		ctxUser := userFromCookies(&w, r, c.R)
 
 		ctxLogger.WithField("ctxUser", ctxUser).Debugln("User retrieved from context")
 		ctx := context.WithValue(r.Context(), contextKeyAuth, ctxUser)
