@@ -31,9 +31,7 @@ type Config struct {
 
 // UserInfo holds authorization info sent and received in jwt custom claims
 type UserInfo struct {
-	ID    uuid.UUID `json:"id"`
-	Email string    `json:"email"`
-	Roles []string  `json:"roles"`
+	ID uuid.UUID `json:"id"`
 }
 
 // UserClaims used for creating and parsing JWTs

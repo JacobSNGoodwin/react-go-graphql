@@ -34,15 +34,8 @@ func (u *User) LoginOrCreate(p graphql.ResolveParams) error {
 
 	w := middleware.GetWriter(p.Context)
 
-	var roles []string
-	for _, role := range u.Roles {
-		roles = append(roles, role.Name)
-	}
-
 	userInfo := middleware.UserInfo{
-		ID:    u.ID,
-		Email: u.Email,
-		Roles: roles,
+		ID: u.ID,
 	}
 
 	if err := middleware.CreateAndSendToken(w, userInfo); err != nil {
