@@ -1,27 +1,29 @@
-package models
+package model
 
 import (
 	"github.com/graphql-go/graphql"
+	"github.com/maxbrain0/react-go-graphql/server/logger"
 	"github.com/maxbrain0/react-go-graphql/server/middleware"
+	"github.com/maxbrain0/react-go-graphql/server/schema"
 	uuid "github.com/satori/go.uuid"
 )
 
-// User holds user information and role
-type User struct {
-	Base
-	Name     string  `json:"name" gorm:"type:varchar(100);not null"`
-	Email    string  `json:"email" gorm:"type:varchar(100);unique_index"`
-	ImageURI string  `json:"imageUri" gorm:"type:text"`
-	Roles    []*Role `json:"roles" gorm:"many2many:user_roles"`
-}
+var ctxLogger = logger.CtxLogger
 
-// Users holds an array of users
-type Users []User
+// User holds data of type schema.User for a single user
+type User schema.User
+
+// Users is used for parsing gorm reads with multiple users
+type Users []*schema.User
+
+// UserClaims is used as data type for creating jwts
+type UserClaims schema.UserClaims
 
 // LoginOrCreate takes the current user and logs them in if they exist.
 // It creates the user if the user doesn't yet exist
 func (u *User) LoginOrCreate(p graphql.ResolveParams) error {
 	db := middleware.GetDB(p.Context)
+	// rc := middleware.GetRedis(p.Context)
 
 	// Add error checking
 	if err := db.
@@ -42,7 +44,7 @@ func (u *User) LoginOrCreate(p graphql.ResolveParams) error {
 }
 
 // GetAll returns a list of all users
-func (u *Users) GetAll(p graphql.ResolveParams) error {
+func (u Users) GetAll(p graphql.ResolveParams) error {
 	db := middleware.GetDB(p.Context)
 	// userInfo := middleware.GetAuth(p.Context)
 

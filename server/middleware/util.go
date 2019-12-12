@@ -8,20 +8,22 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/maxbrain0/react-go-graphql/server/schema"
+	uuid "github.com/satori/go.uuid"
 )
 
-func userFromCookies(w *http.ResponseWriter, r *http.Request) UserInfo {
+func userFromCookies(w *http.ResponseWriter, r *http.Request) *User {
 	// get cookie containing header/payload + cookie containing signature
 
 	// if error, we will not have auth data on requests and requests will fail
 	// to clarify, and parsing problems will result in empty authorization info
 	c1, err := r.Cookie("userinfo")
 	if err != nil {
-		return UserInfo{}
+		return &User{}
 	}
 	c2, err := r.Cookie("signature")
 	if err != nil {
-		return UserInfo{}
+		return &User{}
 	}
 
 	ts := c1.Value + "." + c2.Value
@@ -32,30 +34,35 @@ func userFromCookies(w *http.ResponseWriter, r *http.Request) UserInfo {
 
 	if err != nil {
 		ctxLogger.Debugln("Unable to parse jwt from string")
-		return UserInfo{}
+		return &User{}
 	}
 
 	claims, ok := token.Claims.(*UserClaims)
 
 	if !ok && !token.Valid {
 		ctxLogger.Debugln("Invalid jwt")
-		return UserInfo{}
+		return &User{}
 	}
 
 	c1.Expires = time.Now().Add(time.Minute * 30)
 	http.SetCookie(*w, c1)
-	return claims.UserInfo
+
+	return &User{
+		Base: schema.Base{
+			ID: claims.ID,
+		},
+	}
 }
 
 // CreateAndSendToken is a utility function for writing tokens
-func CreateAndSendToken(w *http.ResponseWriter, u UserInfo) error {
+func CreateAndSendToken(w *http.ResponseWriter, id uuid.UUID) error {
 	currentTime := time.Now()
 	tokenExpiryTime := currentTime.Add(time.Hour * 24)
 	cookieExpiryTime := currentTime.Add(time.Minute * 30)
 
 	// create and sign the token
 	claims := UserClaims{
-		UserInfo: u,
+		ID: id,
 		StandardClaims: jwt.StandardClaims{
 			Issuer:    "graphql.demo",
 			IssuedAt:  currentTime.Unix(),

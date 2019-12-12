@@ -4,13 +4,12 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/go-redis/redis/v7"
 	"github.com/graphql-go/handler"
 	"github.com/jinzhu/gorm"
 	"github.com/maxbrain0/react-go-graphql/server/config"
 	"github.com/maxbrain0/react-go-graphql/server/logger"
-	uuid "github.com/satori/go.uuid"
+	"github.com/maxbrain0/react-go-graphql/server/schema"
 )
 
 type contextKey string
@@ -32,26 +31,19 @@ type Config struct {
 	R          *redis.Client
 }
 
-// UserInfo holds authorization info sent and received in jwt custom claims
-type UserInfo struct {
-	ID uuid.UUID `json:"id"`
-}
-
 // UserClaims used for creating and parsing JWTs
-type UserClaims struct {
-	UserInfo UserInfo `json:"userInfo"`
-	jwt.StandardClaims
-}
+type UserClaims schema.UserClaims
+
+// User is in middleware used to verify a user
+type User schema.User
 
 // HTTPMiddleware adds the request header to a graphql handler function
 func HTTPMiddleware(c Config) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Get cookies and reconstruct token - verify token and append authorization roles to
 		// the req context
-		userInfo := userFromCookies(&w, r)
-		ctx := context.WithValue(r.Context(), contextKeyAuth, userInfo)
-
-		// ctxLogger.WithField("Auth", claims.UserInfo).Debugln("UserInfo on context")
+		ctxUser := userFromCookies(&w, r)
+		ctx := context.WithValue(r.Context(), contextKeyAuth, ctxUser)
 
 		// Configure DB and auth (for verifying tokens with google/fb)
 		ctx = context.WithValue(ctx, contextKeyHeader, r.Header)
@@ -84,8 +76,8 @@ func GetRedis(ctx context.Context) *redis.Client {
 }
 
 // GetAuth returns UserInfo as parsed from jwt
-func GetAuth(ctx context.Context) UserInfo {
-	return ctx.Value(contextKeyAuth).(UserInfo)
+func GetAuth(ctx context.Context) *User {
+	return ctx.Value(contextKeyAuth).(*User)
 }
 
 // GetAuthProviders loads a map with key strings to the oauth2 provider and values containing oauth2.config
