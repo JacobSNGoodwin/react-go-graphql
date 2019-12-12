@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/go-redis/redis/v7"
 	"github.com/graphql-go/handler"
 	"github.com/jinzhu/gorm"
 	"github.com/maxbrain0/react-go-graphql/server/config"
@@ -16,6 +17,7 @@ type contextKey string
 
 const contextKeyHeader = contextKey("header")
 const contextKeyDB = contextKey("db")
+const contextKeyRedis = contextKey("redis")
 const contextKeyAuth = contextKey("Auth")
 const contextKeyAuthProviders = contextKey("AuthProviders")
 const contextKeyWriter = contextKey("writer")
@@ -27,6 +29,7 @@ type Config struct {
 	GQLHandler *handler.Handler
 	DB         *gorm.DB
 	AUTH       *config.Auth
+	R          *redis.Client
 }
 
 // UserInfo holds authorization info sent and received in jwt custom claims
@@ -53,6 +56,7 @@ func HTTPMiddleware(c Config) http.Handler {
 		// Configure DB and auth (for verifying tokens with google/fb)
 		ctx = context.WithValue(ctx, contextKeyHeader, r.Header)
 		ctx = context.WithValue(ctx, contextKeyDB, c.DB)
+		ctx = context.WithValue(ctx, contextKeyRedis, c.R)
 		ctx = context.WithValue(ctx, contextKeyAuthProviders, c.AUTH)
 
 		// Configure response
@@ -72,6 +76,11 @@ func GetHeader(ctx context.Context) http.Header {
 // GetDB retrieves gorm connection from context
 func GetDB(ctx context.Context) *gorm.DB {
 	return ctx.Value(contextKeyDB).(*gorm.DB)
+}
+
+// GetRedis retrieves redis client from context
+func GetRedis(ctx context.Context) *redis.Client {
+	return ctx.Value(contextKeyRedis).(*redis.Client)
 }
 
 // GetAuth returns UserInfo as parsed from jwt

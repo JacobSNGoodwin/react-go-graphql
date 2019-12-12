@@ -7,6 +7,7 @@ require (
 	github.com/casbin/gorm-adapter/v2 v2.0.3
 	github.com/coreos/go-oidc v2.1.0+incompatible
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/go-redis/redis/v7 v7.0.0-beta.4
 	github.com/google/uuid v1.1.1
 	github.com/graphql-go/graphql v0.7.8
 	github.com/graphql-go/handler v0.2.3

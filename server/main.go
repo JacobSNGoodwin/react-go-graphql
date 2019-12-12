@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/go-redis/redis/v7"
 	"github.com/graphql-go/graphql"
 	"github.com/graphql-go/handler"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
@@ -77,6 +78,23 @@ func main() {
 	d.Init()
 	defer d.DB.Close()
 
+	// create REDIS client
+	rc := redis.NewClient(&redis.Options{
+		Addr:     os.Getenv("REDIS_HOST"),
+		Password: os.Getenv("REDIS_PASSWORD"), // no password set
+		DB:       0,                           // use default DB
+	})
+
+	_, err = rc.Ping().Result()
+
+	if err != nil {
+		ctxLogger.Fatalf("Failed to create redis client connection: %v\n", err)
+	}
+
+	ctxLogger.WithFields(logrus.Fields{
+		"Addr": rc.Options().Addr,
+	}).Info("Redis client connection established")
+
 	// setup auth config for login queries and mutations
 	authConfig := &config.Auth{}
 
@@ -95,6 +113,7 @@ func main() {
 		GQLHandler: h,
 		DB:         d.DB,
 		AUTH:       authConfig,
+		R:          rc,
 	}))
 
 	// run server in go func, and gracefully shut down server and database connection
@@ -123,8 +142,13 @@ func main() {
 	if err := d.DB.Close(); err != nil {
 		ctxLogger.Fatalf("Failed to shut down databse %v", dbPort)
 	}
-
 	ctxLogger.Info("Successfully closed connection to postgres")
+
+	// disconnect redis
+	if err := rc.Close(); err != nil {
+		ctxLogger.Fatalf("Failed to shut down redis %v")
+	}
+	ctxLogger.Info("Successfully closed connection to redis")
 
 	// give 5 seconds to shutdown server
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

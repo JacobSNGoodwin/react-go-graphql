@@ -20,6 +20,10 @@ type Database struct {
 	DB      *gorm.DB
 }
 
+type Redis struct {
+
+}
+
 var ctxLogger = logger.CtxLogger
 
 // Connect returns the DB connection for the connection info in the struct
