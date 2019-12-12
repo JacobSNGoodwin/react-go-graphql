@@ -43,6 +43,8 @@ func HTTPMiddleware(c Config) http.Handler {
 		// Get cookies and reconstruct token - verify token and append authorization roles to
 		// the req context
 		ctxUser := userFromCookies(&w, r)
+
+		ctxLogger.WithField("ctxUser", ctxUser).Debugln("User retrieved from context")
 		ctx := context.WithValue(r.Context(), contextKeyAuth, ctxUser)
 
 		// Configure DB and auth (for verifying tokens with google/fb)

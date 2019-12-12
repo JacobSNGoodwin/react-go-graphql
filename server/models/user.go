@@ -1,9 +1,12 @@
 package models
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/graphql-go/graphql"
 	"github.com/maxbrain0/react-go-graphql/server/middleware"
 	uuid "github.com/satori/go.uuid"
+	"time"
 )
 
 // User holds user information and role
@@ -21,7 +24,9 @@ type Users []User
 // LoginOrCreate takes the current user and logs them in if they exist.
 // It creates the user if the user doesn't yet exist
 func (u *User) LoginOrCreate(p graphql.ResolveParams) error {
+	w := middleware.GetWriter(p.Context)
 	db := middleware.GetDB(p.Context)
+	rc := middleware.GetRedis(p.Context)
 
 	// Add error checking
 	if err := db.
@@ -32,19 +37,26 @@ func (u *User) LoginOrCreate(p graphql.ResolveParams) error {
 		return err
 	}
 
-	w := middleware.GetWriter(p.Context)
-
-	if err := middleware.CreateAndSendToken(w, u.ID); err != nil {
-		return err
+	val, err := json.Marshal(u)
+	if err != nil {
+		return fmt.Errorf("Failed to login user")
 	}
 
+	// user will expire after 24 hours, same with token
+	if err := rc.Set(u.ID.String(), val, time.Hour*24).Err(); err != nil {
+		return fmt.Errorf("Failed to login user")
+	}
+
+	// If either token creation or redis store fails, consider login to have failed
+	if err := middleware.CreateAndSendToken(w, u.ID); err != nil {
+		return fmt.Errorf("Failed to login user")
+	}
 	return nil
 }
 
 // GetAll returns a list of all users
 func (u *Users) GetAll(p graphql.ResolveParams) error {
 	db := middleware.GetDB(p.Context)
-	// userInfo := middleware.GetAuth(p.Context)
 
 	// if !userInfo.Roles.IsAdmin {
 	// 	return fmt.Errorf("User is not authorized to view other users")
