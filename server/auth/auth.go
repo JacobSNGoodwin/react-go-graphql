@@ -1,4 +1,4 @@
-package config
+package auth
 
 import (
 	"context"
@@ -25,10 +25,14 @@ type FBResponse struct {
 
 // Auth holds a map of oauth2 configurations that are initialized with environment variables
 // in the LoadConfig method
-type Auth struct {
+type Auth struct{}
+
+var (
+	// GoogleVerifier used for verifying google ID tokens in gql/http pipeline
 	GoogleVerifier *oidc.IDTokenVerifier
-	FBAccessToken  string
-}
+	// FBAccessToken used for validating access tokens issues for this application
+	FBAccessToken string
+)
 
 // Load sets up necessary server-side auth verifications
 // for 3rd party providers like Google and Facebook
@@ -40,7 +44,7 @@ func (a *Auth) Load() {
 		ctxLogger.Fatalf("Unable to create google oid provider: %v", err.Error())
 	}
 
-	a.GoogleVerifier = prodiver.Verifier(&oidc.Config{
+	GoogleVerifier = prodiver.Verifier(&oidc.Config{
 		ClientID: os.Getenv("GOOGLE_CLIENT_ID"),
 	})
 
@@ -61,5 +65,5 @@ func (a *Auth) Load() {
 	decodedFBRes := new(FBResponse)
 	json.NewDecoder(fbRes.Body).Decode(&decodedFBRes)
 
-	a.FBAccessToken = decodedFBRes.AccessToken
+	FBAccessToken = decodedFBRes.AccessToken
 }

@@ -6,9 +6,10 @@ import (
 
 	"github.com/jinzhu/gorm"
 	"github.com/maxbrain0/react-go-graphql/server/logger"
-	"github.com/maxbrain0/react-go-graphql/server/schema"
-	"github.com/sirupsen/logrus"
 )
+
+// Conn holds globally available connection to GORM
+var Conn *gorm.DB
 
 // Database holds connection string info for that database
 type Database struct {
@@ -17,7 +18,6 @@ type Database struct {
 	User    string
 	Name    string
 	SSLMode string
-	DB      *gorm.DB
 }
 
 var ctxLogger = logger.CtxLogger
@@ -32,53 +32,5 @@ func (d *Database) Connect() {
 		log.Fatalf("Failed to create connection to postgres database: %v", err.Error())
 	}
 
-	d.DB = db
-}
-
-// Init assures tables for provided models are available and initialized a couple of users and roles
-func (d *Database) Init() {
-	d.DB.AutoMigrate(&schema.User{})
-	d.DB.AutoMigrate(&schema.Role{})
-
-	var admin schema.Role
-	var editor schema.Role
-	var user1 schema.User
-
-	// create two roles for first user
-	d.DB.FirstOrCreate(&admin, schema.Role{
-		Name: schema.AdminRole,
-	})
-
-	ctxLogger.WithFields(logrus.Fields{
-		"id":        admin.ID,
-		"Name":      admin.Name,
-		"UpdatedAt": admin.UpdatedAt,
-	}).Debugln("Created or found role")
-
-	d.DB.FirstOrCreate(&editor, schema.Role{
-		Name: schema.EditorRole,
-	})
-
-	ctxLogger.WithFields(logrus.Fields{
-		"id":        editor.ID,
-		"Name":      editor.Name,
-		"UpdatedAt": editor.UpdatedAt,
-	}).Debugln("Created or found role")
-
-	// Create users
-	d.DB.FirstOrCreate(&user1, schema.User{
-		Name:     "Jacob",
-		Email:    "jacob.goodwin@gmail.com",
-		ImageURI: "https://lh3.googleusercontent.com/a-/AAuE7mCsAHdorySC7ttxiSQOx7xtcUHhMwX6LlJwDT65LsE=s96-c",
-	})
-
-	// seems hwe have to do it this way for back ref
-	d.DB.Model(&user1).Association("Roles").Append([]schema.Role{admin, editor})
-
-	ctxLogger.WithFields(logrus.Fields{
-		"id":        user1.ID,
-		"Name":      user1.Name,
-		"UpdatedAt": user1.UpdatedAt,
-		"Roles":     user1.Roles,
-	}).Debugln("Created or found user")
+	Conn = db
 }

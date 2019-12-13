@@ -11,16 +11,17 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/go-redis/redis/v7"
 	"github.com/graphql-go/graphql"
 	"github.com/graphql-go/handler"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/joho/godotenv"
-	"github.com/maxbrain0/react-go-graphql/server/config"
+	"github.com/maxbrain0/react-go-graphql/server/auth"
 	"github.com/maxbrain0/react-go-graphql/server/database"
 	"github.com/maxbrain0/react-go-graphql/server/gql"
+	"github.com/maxbrain0/react-go-graphql/server/inmem"
 	"github.com/maxbrain0/react-go-graphql/server/logger"
 	"github.com/maxbrain0/react-go-graphql/server/middleware"
+	"github.com/maxbrain0/react-go-graphql/server/models"
 	"github.com/sirupsen/logrus"
 )
 
@@ -29,7 +30,7 @@ var ctxLogger = logger.CtxLogger
 func main() {
 	// load env variables from .env file
 	// need check to run coad only in DEV mode
-	envPath, err := filepath.Abs("./config/.env")
+	envPath, err := filepath.Abs("./.env")
 	if err != nil {
 		ctxLogger.Fatal("Failed to load development env file")
 	}
@@ -75,30 +76,28 @@ func main() {
 		"dbname": dbName,
 	}).Info("Connection to Postgres DB established")
 
-	d.Init()
-	defer d.DB.Close()
+	defer database.Conn.Close()
 
 	// create REDIS client
-	rc := redis.NewClient(&redis.Options{
+	var redis = inmem.Redis{
 		Addr:     os.Getenv("REDIS_HOST"),
-		Password: os.Getenv("REDIS_PASSWORD"), // no password set
-		DB:       0,                           // use default DB
-	})
-
-	_, err = rc.Ping().Result()
-
-	if err != nil {
-		ctxLogger.Fatalf("Failed to create redis client connection: %v\n", err)
+		Password: os.Getenv("Redis_Password"),
 	}
 
+	redis.Connect()
+
 	ctxLogger.WithFields(logrus.Fields{
-		"Addr": rc.Options().Addr,
+		"Addr": inmem.Conn.Options().Addr,
 	}).Info("Redis client connection established")
 
 	// setup auth config for login queries and mutations
-	authConfig := &config.Auth{}
-
+	authConfig := &auth.Auth{}
 	authConfig.Load()
+
+	ctxLogger.Infoln("Successfully configured authentication providers")
+
+	// Optional database initialization
+	models.Init()
 
 	// setup handler endpoint
 	h := handler.New(&handler.Config{
@@ -109,11 +108,9 @@ func main() {
 	})
 
 	// use middleware which gets request headers and injects db
-	http.Handle("/graphql", middleware.HTTPMiddleware(middleware.Config{
+	http.Handle("/graphql", middleware.HTTPMiddleware(&middleware.Config{
 		GQLHandler: h,
-		DB:         d.DB,
-		AUTH:       authConfig,
-		R:          rc,
+		R:          inmem.Conn,
 	}))
 
 	// run server in go func, and gracefully shut down server and database connection
@@ -139,13 +136,13 @@ func main() {
 	<-done
 
 	// disconnect postgres
-	if err := d.DB.Close(); err != nil {
+	if err := database.Conn.Close(); err != nil {
 		ctxLogger.Fatalf("Failed to shut down databse %v", dbPort)
 	}
 	ctxLogger.Info("Successfully closed connection to postgres")
 
 	// disconnect redis
-	if err := rc.Close(); err != nil {
+	if err := inmem.Conn.Close(); err != nil {
 		ctxLogger.Fatalf("Failed to shut down redis %v")
 	}
 	ctxLogger.Info("Successfully closed connection to redis")

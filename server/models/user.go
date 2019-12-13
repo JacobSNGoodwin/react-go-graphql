@@ -3,10 +3,14 @@ package models
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/graphql-go/graphql"
-	"github.com/maxbrain0/react-go-graphql/server/middleware"
-	uuid "github.com/satori/go.uuid"
+	"net/http"
 	"time"
+
+	"github.com/dgrijalva/jwt-go"
+	"github.com/graphql-go/graphql"
+	"github.com/maxbrain0/react-go-graphql/server/database"
+	"github.com/maxbrain0/react-go-graphql/server/inmem"
+	uuid "github.com/satori/go.uuid"
 )
 
 // User holds user information and role
@@ -18,17 +22,22 @@ type User struct {
 	Roles    []*Role `json:"roles" gorm:"many2many:user_roles"`
 }
 
+// UserClaims used for creating and parsing JWTs
+type UserClaims struct {
+	ID uuid.UUID `json:"id"`
+	jwt.StandardClaims
+}
+
 // Users holds an array of users
 type Users []User
 
 // LoginOrCreate takes the current user and logs them in if they exist.
 // It creates the user if the user doesn't yet exist
 func (u *User) LoginOrCreate(p graphql.ResolveParams) error {
-	w := middleware.GetWriter(p.Context)
-	db := middleware.GetDB(p.Context)
-	rc := middleware.GetRedis(p.Context)
-
 	// Add error checking
+	db := database.Conn
+	w := p.Context.Value(ContextKeyWriter).(*http.ResponseWriter)
+
 	if err := db.
 		Preload("Roles").
 		Where(User{Email: u.Email}).
@@ -43,12 +52,12 @@ func (u *User) LoginOrCreate(p graphql.ResolveParams) error {
 	}
 
 	// user will expire after 24 hours, same with token
-	if err := rc.Set(u.ID.String(), val, time.Hour*24).Err(); err != nil {
+	if err := inmem.Conn.Set(u.ID.String(), val, time.Hour*24).Err(); err != nil {
 		return fmt.Errorf("Failed to login user")
 	}
 
 	// If either token creation or redis store fails, consider login to have failed
-	if err := middleware.CreateAndSendToken(w, u.ID); err != nil {
+	if err := createAndSendToken(w, u.ID); err != nil {
 		return fmt.Errorf("Failed to login user")
 	}
 	return nil
@@ -56,7 +65,7 @@ func (u *User) LoginOrCreate(p graphql.ResolveParams) error {
 
 // GetAll returns a list of all users
 func (u *Users) GetAll(p graphql.ResolveParams) error {
-	db := middleware.GetDB(p.Context)
+	db := database.Conn
 
 	// if !userInfo.Roles.IsAdmin {
 	// 	return fmt.Errorf("User is not authorized to view other users")
@@ -77,7 +86,7 @@ func (u *Users) GetAll(p graphql.ResolveParams) error {
 
 // GetByID gets user from database based on the users ID
 func (u *User) GetByID(p graphql.ResolveParams) error {
-	db := middleware.GetDB(p.Context)
+	db := database.Conn
 	// userInfo := middleware.GetAuth(p.Context)
 
 	// if !userInfo.Roles.IsAdmin {
@@ -95,18 +104,16 @@ func (u *User) GetByID(p graphql.ResolveParams) error {
 	return nil
 }
 
-// GetCurrent gets user from database based on the users ID
+// GetCurrent retrieves the current user directly from the context
+// to avoid double data calls
 func (u *User) GetCurrent(p graphql.ResolveParams) error {
-	db := middleware.GetDB(p.Context)
-	userInfo := middleware.GetAuth(p.Context)
+	user, ok := p.Context.Value(ContextKeyUser).(User)
 
-	// Find by uuid or email, which should both be unique
-	if result := db.
-		Preload("Roles").
-		Where("id = ?", userInfo.ID).
-		Find(&u); result.Error != nil {
-		return result.Error
+	if !ok {
+		return fmt.Errorf("Unable to retrieve user from the context")
 	}
+	// Will this work...?
+	*u = user
 
 	return nil
 }
