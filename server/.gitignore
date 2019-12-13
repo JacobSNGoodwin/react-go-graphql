@@ -15,3 +15,7 @@
 # vendor/
 
 postgres-data
+
+.env
+
+redis-data

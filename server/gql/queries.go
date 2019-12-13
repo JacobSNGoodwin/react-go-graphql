@@ -4,8 +4,6 @@ import (
 	"github.com/graphql-go/graphql"
 	"github.com/maxbrain0/react-go-graphql/server/logger"
 	"github.com/maxbrain0/react-go-graphql/server/models"
-	uuid "github.com/satori/go.uuid"
-	"github.com/sirupsen/logrus"
 )
 
 var ctxLogger = logger.CtxLogger
@@ -28,17 +26,10 @@ var RootQuery = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				db, _ := GetDB(p.Context)
-				var users []models.User
-				if result :=
-					db.
-						Order("email").
-						Limit(p.Args["limit"].(int)).
-						Offset(p.Args["offset"].(int)).
-						Find(&users); result.Error != nil {
-					return nil, nil
+				var users models.Users
+				if err := users.GetAll(p); err != nil {
+					return nil, err
 				}
-
 				return users, nil
 			},
 		},
@@ -53,22 +44,21 @@ var RootQuery = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				db, _ := GetDB(p.Context)
 				var user models.User
-
-				// Find by uuid or email, which should both be unique
-				if result := db.
-					Where("id = ?", uuid.FromStringOrNil(p.Args["id"].(string))).
-					Find(&user); result.Error != nil {
-					return nil, nil
+				if err := user.GetByID(p); err != nil {
+					return nil, err
 				}
-
-				ctxLogger.WithFields(logrus.Fields{
-					"ID":    user.ID,
-					"Email": user.Email,
-					"Name":  user.Name,
-				}).Debug("Found user by id or email")
-
+				return user, nil
+			},
+		},
+		"me": &graphql.Field{
+			Type:        userType,
+			Description: "Returns user for currently logged-in user",
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				var user models.User
+				if err := user.GetCurrent(p); err != nil {
+					return nil, err
+				}
 				return user, nil
 			},
 		},
