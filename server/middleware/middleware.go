@@ -25,7 +25,6 @@ func HTTPMiddleware(c *Config) http.Handler {
 		// the req context
 		ctxUser := userFromCookies(&w, r, c.R)
 
-		ctxLogger.WithField("ctxUser", ctxUser).Debugln("User retrieved from context")
 		ctx := context.WithValue(r.Context(), models.ContextKeyUser, ctxUser)
 		ctx = context.WithValue(ctx, models.ContextKeyWriter, &w)
 

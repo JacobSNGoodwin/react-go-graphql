@@ -67,10 +67,6 @@ func (u *User) LoginOrCreate(p graphql.ResolveParams) error {
 func (u *Users) GetAll(p graphql.ResolveParams) error {
 	db := database.Conn
 
-	// if !userInfo.Roles.IsAdmin {
-	// 	return fmt.Errorf("User is not authorized to view other users")
-	// }
-
 	if result :=
 		db.
 			Order("email").
@@ -87,11 +83,6 @@ func (u *Users) GetAll(p graphql.ResolveParams) error {
 // GetByID gets user from database based on the users ID
 func (u *User) GetByID(p graphql.ResolveParams) error {
 	db := database.Conn
-	// userInfo := middleware.GetAuth(p.Context)
-
-	// if !userInfo.Roles.IsAdmin {
-	// 	return fmt.Errorf("User is not authorized to view other users")
-	// }
 
 	// Find by uuid or email, which should both be unique
 	if result := db.
@@ -107,13 +98,12 @@ func (u *User) GetByID(p graphql.ResolveParams) error {
 // GetCurrent retrieves the current user directly from the context
 // to avoid double data calls
 func (u *User) GetCurrent(p graphql.ResolveParams) error {
-	user, ok := p.Context.Value(ContextKeyUser).(User)
+	user := p.Context.Value(ContextKeyUser).(User)
 
-	if !ok {
-		return fmt.Errorf("Unable to retrieve user from the context")
+	if uuid.Equal(user.ID, uuid.Nil) {
+		return fmt.Errorf("You are not logged in")
 	}
-	// Will this work...?
-	*u = user
 
+	*u = user
 	return nil
 }

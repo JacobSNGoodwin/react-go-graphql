@@ -70,3 +70,13 @@ func createAndSendToken(w *http.ResponseWriter, id uuid.UUID) error {
 
 	return nil
 }
+
+func hasRole(rs []*Role, r string) bool {
+	// possible that val.Name is null? Should be populated with 0 value, at least
+	for _, val := range rs {
+		if val.Name == r {
+			return true
+		}
+	}
+	return false
+}
