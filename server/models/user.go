@@ -2,7 +2,6 @@ package models
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -111,7 +110,7 @@ func (u *User) GetCurrent(p graphql.ResolveParams) error {
 	ctxUser := p.Context.Value(ContextKeyUser).(User)
 
 	if uuid.Equal(ctxUser.ID, uuid.Nil) {
-		return fmt.Errorf("You are not logged in")
+		return errNotAuthorized
 	}
 
 	*u = ctxUser
@@ -125,6 +124,10 @@ func (u *User) Create(p graphql.ResolveParams) error {
 
 	if !hasRole(ctxUser.Roles, "admin") {
 		return errNotAuthorized
+	}
+
+	if err := db.Create(&u); err != nil {
+		return errFailedToCreate
 	}
 
 	return nil

@@ -10,7 +10,6 @@ import (
 	"github.com/graphql-go/graphql"
 	"github.com/maxbrain0/react-go-graphql/server/auth"
 	"github.com/maxbrain0/react-go-graphql/server/models"
-	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 )
 
@@ -150,24 +149,52 @@ func fbLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
 			"Email":   user.Email,
 			"Message": loginErr,
 		}).Warn("Unable to login user")
-		return err, nil
+		return nil, err
 	}
-
 
 	return user, nil
 }
 
 func createUser(p graphql.ResolveParams) (interface{}, error) {
-	id := p.Args["id"].(string)
+	u := models.User{}
+
 	user := p.Args["user"].(map[string]interface{})
-	inputRoles := user["roles"].([]string)
 
-	modelRoles := 
+	// build user model making sure of valid type-assertions
+	if name, ok := user["name"].(string); ok {
+		u.Name = name
+	}
 
-	return models.User{
-		Base: models.Base{
-			ID: uuid.FromStringOrNil(id),
-		},
-		Name: user["name"].(string),
-	}, nil
+	if email, ok := user["email"].(string); ok {
+		u.Email = email
+	}
+
+	if imageURI, ok := user["imageUri"].(string); ok {
+		u.ImageURI = imageURI
+	}
+
+	if inputRoles, ok := user["roles"].([]interface{}); ok {
+		rs := []*models.Role{}
+		for _, r := range inputRoles {
+			if rname, ok := r.(string); ok {
+				rs = append(rs, &models.Role{
+					Name: rname,
+				})
+			}
+			u.Roles = rs
+		}
+
+	}
+
+	err := u.Create(p)
+
+	if err != nil {
+		ctxLogger.WithFields(logrus.Fields{
+			"Email": u.Email,
+		}).Warn("Unable create user")
+		return nil, err
+	}
+
+	return u, nil
+
 }

@@ -32,13 +32,9 @@ var RootMutation = graphql.NewObject(graphql.ObjectConfig{
 			Type:        userType,
 			Description: "Allows admins to create users",
 			Args: graphql.FieldConfigArgument{
-				"id": &graphql.ArgumentConfig{
-					Type:        graphql.NewNonNull(graphql.String),
-					Description: "The id of the user to edit",
-				},
 				"user": &graphql.ArgumentConfig{
 					Type:        userInputType,
-					Description: "The data payload for the user to add or modify",
+					Description: "The data payload for the user to add",
 				},
 			},
 			Resolve: createUser,
