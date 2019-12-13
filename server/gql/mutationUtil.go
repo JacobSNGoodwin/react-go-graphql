@@ -10,6 +10,7 @@ import (
 	"github.com/graphql-go/graphql"
 	"github.com/maxbrain0/react-go-graphql/server/auth"
 	"github.com/maxbrain0/react-go-graphql/server/models"
+	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 )
 
@@ -141,6 +142,7 @@ func fbLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
 		ImageURI: fbUserData.Picture.Data.URL,
 	}
 
+	// create jwt and send cookie
 	loginErr := user.LoginOrCreate(p)
 
 	if loginErr != nil {
@@ -151,7 +153,21 @@ func fbLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
 		return err, nil
 	}
 
-	// create jwt and send cookie
 
 	return user, nil
+}
+
+func createUser(p graphql.ResolveParams) (interface{}, error) {
+	id := p.Args["id"].(string)
+	user := p.Args["user"].(map[string]interface{})
+	inputRoles := user["roles"].([]string)
+
+	modelRoles := 
+
+	return models.User{
+		Base: models.Base{
+			ID: uuid.FromStringOrNil(id),
+		},
+		Name: user["name"].(string),
+	}, nil
 }

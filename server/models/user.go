@@ -48,17 +48,17 @@ func (u *User) LoginOrCreate(p graphql.ResolveParams) error {
 
 	val, err := json.Marshal(u)
 	if err != nil {
-		return fmt.Errorf("Failed to login user")
+		return errFailedToAuthenticate
 	}
 
 	// user will expire after 24 hours, same with token
 	if err := inmem.Conn.Set(u.ID.String(), val, time.Hour*24).Err(); err != nil {
-		return fmt.Errorf("Failed to login user")
+		return errFailedToAuthenticate
 	}
 
 	// If either token creation or redis store fails, consider login to have failed
 	if err := createAndSendToken(w, u.ID); err != nil {
-		return fmt.Errorf("Failed to login user")
+		return errFailedToAuthenticate
 	}
 	return nil
 }
@@ -69,7 +69,7 @@ func (u *Users) GetAll(p graphql.ResolveParams) error {
 	ctxUser := p.Context.Value(ContextKeyUser).(User)
 
 	if !hasRole(ctxUser.Roles, "admin") {
-		return fmt.Errorf("Not authorized for route")
+		return errNotAuthorized
 	}
 
 	if result :=
@@ -91,7 +91,7 @@ func (u *User) GetByID(p graphql.ResolveParams) error {
 	ctxUser := p.Context.Value(ContextKeyUser).(User)
 
 	if !hasRole(ctxUser.Roles, "admin") {
-		return fmt.Errorf("Not authorized for route")
+		return errNotAuthorized
 	}
 
 	// Find by uuid or email, which should both be unique
@@ -115,5 +115,17 @@ func (u *User) GetCurrent(p graphql.ResolveParams) error {
 	}
 
 	*u = ctxUser
+	return nil
+}
+
+// Create adds a new User to the database
+func (u *User) Create(p graphql.ResolveParams) error {
+	db := database.Conn
+	ctxUser := p.Context.Value(ContextKeyUser).(User)
+
+	if !hasRole(ctxUser.Roles, "admin") {
+		return errNotAuthorized
+	}
+
 	return nil
 }

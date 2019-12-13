@@ -12,6 +12,8 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+// Types and vars accessible to models in general
+
 type contextKey string
 
 // ContextKeyUser used as a type for setting and acccessing User on the http/graphql context
@@ -20,7 +22,14 @@ const ContextKeyUser = contextKey("User")
 // ContextKeyWriter used to access writer in http pipeline (for setting cookies outside of middleware)
 const ContextKeyWriter = contextKey("writer")
 
+var (
+	errNotAuthorized        = fmt.Errorf("Not authorized")
+	errFailedToAuthenticate = fmt.Errorf("Failed to authenticate user")
+)
+
 var ctxLogger = logger.CtxLogger
+
+// utility functions for models
 
 // createAndSendToken is a utility function for writing tokens
 func createAndSendToken(w *http.ResponseWriter, id uuid.UUID) error {

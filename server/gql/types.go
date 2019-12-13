@@ -48,6 +48,30 @@ var userType = graphql.NewObject(graphql.ObjectConfig{
 	},
 })
 
+var userInputType = graphql.NewInputObject(
+	graphql.InputObjectConfig{
+		Name: "UserInput",
+		Fields: graphql.InputObjectConfigFieldMap{
+			"name": &graphql.InputObjectFieldConfig{
+				Type:        graphql.String,
+				Description: "Name of the user who you want to provide access to",
+			},
+			"email": &graphql.InputObjectFieldConfig{
+				Type:        graphql.String,
+				Description: "The email address of the user. User must use this email on FB or Google",
+			},
+			"imageUri": &graphql.InputObjectFieldConfig{
+				Type:        graphql.String,
+				Description: "Holds the user's image Uri, if any",
+			},
+			"roles": &graphql.InputObjectFieldConfig{
+				Type:        graphql.NewList(roleEnum),
+				Description: "An array of roles to assign to the user",
+			},
+		},
+	},
+)
+
 var roleEnum = graphql.NewEnum(graphql.EnumConfig{
 	Name:        "Role",
 	Description: "Holds the roles available for this API",
