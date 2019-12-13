@@ -66,6 +66,11 @@ func (u *User) LoginOrCreate(p graphql.ResolveParams) error {
 // GetAll returns a list of all users
 func (u *Users) GetAll(p graphql.ResolveParams) error {
 	db := database.Conn
+	ctxUser := p.Context.Value(ContextKeyUser).(User)
+
+	if !hasRole(ctxUser.Roles, "admin") {
+		return fmt.Errorf("Not authorized for route")
+	}
 
 	if result :=
 		db.
@@ -83,6 +88,11 @@ func (u *Users) GetAll(p graphql.ResolveParams) error {
 // GetByID gets user from database based on the users ID
 func (u *User) GetByID(p graphql.ResolveParams) error {
 	db := database.Conn
+	ctxUser := p.Context.Value(ContextKeyUser).(User)
+
+	if !hasRole(ctxUser.Roles, "admin") {
+		return fmt.Errorf("Not authorized for route")
+	}
 
 	// Find by uuid or email, which should both be unique
 	if result := db.
@@ -98,12 +108,12 @@ func (u *User) GetByID(p graphql.ResolveParams) error {
 // GetCurrent retrieves the current user directly from the context
 // to avoid double data calls
 func (u *User) GetCurrent(p graphql.ResolveParams) error {
-	user := p.Context.Value(ContextKeyUser).(User)
+	ctxUser := p.Context.Value(ContextKeyUser).(User)
 
-	if uuid.Equal(user.ID, uuid.Nil) {
+	if uuid.Equal(ctxUser.ID, uuid.Nil) {
 		return fmt.Errorf("You are not logged in")
 	}
 
-	*u = user
+	*u = ctxUser
 	return nil
 }
