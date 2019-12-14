@@ -8,6 +8,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/graphql-go/graphql"
 	"github.com/maxbrain0/react-go-graphql/server/database"
+	"github.com/maxbrain0/react-go-graphql/server/errors"
 	"github.com/maxbrain0/react-go-graphql/server/inmem"
 	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
@@ -111,7 +112,7 @@ func (u *User) GetCurrent(p graphql.ResolveParams) error {
 	ctxUser := p.Context.Value(ContextKeyUser).(User)
 
 	if uuid.Equal(ctxUser.ID, uuid.Nil) {
-		return errFailedToAuthenticate
+		return errors.NewAuthenticationError("User is not logged")
 	}
 
 	*u = ctxUser
