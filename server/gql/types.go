@@ -48,16 +48,16 @@ var userType = graphql.NewObject(graphql.ObjectConfig{
 	},
 })
 
-var userInputType = graphql.NewInputObject(
+var userCreateType = graphql.NewInputObject(
 	graphql.InputObjectConfig{
-		Name: "UserInput",
+		Name: "CreateUserInput",
 		Fields: graphql.InputObjectConfigFieldMap{
 			"name": &graphql.InputObjectFieldConfig{
-				Type:        graphql.String,
+				Type:        graphql.NewNonNull(graphql.String),
 				Description: "Name of the user who you want to provide access to",
 			},
 			"email": &graphql.InputObjectFieldConfig{
-				Type:        graphql.String,
+				Type:        graphql.NewNonNull(graphql.String),
 				Description: "The email address of the user. User must use this email on FB or Google",
 			},
 			"imageUri": &graphql.InputObjectFieldConfig{
