@@ -1,10 +1,14 @@
 package models
 
 // AdminRole holds const value for creator
-const AdminRole = "admin"
+var AdminRole = Role{
+	Name: "admin",
+}
 
 // EditorRole holds const value for editor
-const EditorRole = "editor"
+var EditorRole = Role{
+	Name: "editor",
+}
 
 // Role struct holds database and response characteristics for a user role
 type Role struct {

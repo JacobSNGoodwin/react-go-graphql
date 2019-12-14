@@ -11,40 +11,32 @@ func Init() {
 	db.AutoMigrate(&User{})
 	db.AutoMigrate(&Role{})
 
-	var admin Role
-	var editor Role
 	var user1 User
 
-	// create two roles for first user
-	db.FirstOrCreate(&admin, Role{
-		Name: AdminRole,
-	})
+	// Create Admin and Editor Roles
+	// Can iterate over array or map if we need many roles in the future
+	db.Where(AdminRole).FirstOrCreate(&AdminRole)
 
 	ctxLogger.WithFields(logrus.Fields{
-		"id":        admin.ID,
-		"Name":      admin.Name,
-		"UpdatedAt": admin.UpdatedAt,
+		"id":        AdminRole.ID,
+		"Name":      AdminRole.Name,
+		"UpdatedAt": AdminRole.UpdatedAt,
 	}).Debugln("Created or found role")
 
-	db.FirstOrCreate(&editor, Role{
-		Name: EditorRole,
-	})
+	db.Where(EditorRole).FirstOrCreate(&EditorRole)
 
 	ctxLogger.WithFields(logrus.Fields{
-		"id":        editor.ID,
-		"Name":      editor.Name,
-		"UpdatedAt": editor.UpdatedAt,
+		"id":        EditorRole.ID,
+		"Name":      EditorRole.Name,
+		"UpdatedAt": EditorRole.UpdatedAt,
 	}).Debugln("Created or found role")
 
-	// Create users
+	// Create users and append roles
 	db.FirstOrCreate(&user1, User{
 		Name:     "Jacob",
 		Email:    "jacob.goodwin@gmail.com",
 		ImageURI: "https://lh3.googleusercontent.com/a-/AAuE7mCsAHdorySC7ttxiSQOx7xtcUHhMwX6LlJwDT65LsE=s96-c",
-	})
-
-	// seems hwe have to do it this way for back ref
-	db.Model(&user1).Association("Roles").Append([]Role{admin, editor})
+	}).Model(&user1).Association("Roles").Append([]Role{AdminRole, EditorRole})
 
 	ctxLogger.WithFields(logrus.Fields{
 		"id":        user1.ID,
