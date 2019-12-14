@@ -241,5 +241,15 @@ func editUser(p graphql.ResolveParams) (interface{}, error) {
 	}
 
 	return u, nil
+}
 
+func deleteUser(p graphql.ResolveParams) (interface{}, error) {
+	u := models.User{}
+	id := p.Args["id"].(string)
+	u.ID = uuid.FromStringOrNil(id)
+	if err := u.Delete(p); err != nil {
+		return nil, err
+	}
+
+	return id, nil
 }

@@ -50,5 +50,16 @@ var RootMutation = graphql.NewObject(graphql.ObjectConfig{
 			},
 			Resolve: editUser,
 		},
+		"deleteUser": &graphql.Field{
+			Type:        graphql.String,
+			Description: "Allows admins to delete a user",
+			Args: graphql.FieldConfigArgument{
+				"id": &graphql.ArgumentConfig{
+					Type:        graphql.String,
+					Description: "Deletes the user with the given id and returns the id as confirmation",
+				},
+			},
+			Resolve: deleteUser,
+		},
 	},
 })

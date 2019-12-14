@@ -165,3 +165,19 @@ func (u *User) Update(p graphql.ResolveParams, updates map[string]interface{}, u
 
 	return nil
 }
+
+// Delete removes user with u.ID
+func (u *User) Delete(p graphql.ResolveParams) error {
+	db := database.Conn
+	ctxUser := p.Context.Value(ContextKeyUser).(User)
+
+	if !hasRole(ctxUser.Roles, "admin") {
+		return errNotAuthorized
+	}
+
+	if err := db.Delete(&u).Error; err != nil {
+		return errNotFound
+	}
+
+	return nil
+}
