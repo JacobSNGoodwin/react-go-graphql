@@ -10,6 +10,7 @@ import (
 	"github.com/maxbrain0/react-go-graphql/server/database"
 	"github.com/maxbrain0/react-go-graphql/server/inmem"
 	uuid "github.com/satori/go.uuid"
+	"github.com/sirupsen/logrus"
 )
 
 // User holds user information and role
@@ -118,7 +119,8 @@ func (u *User) GetCurrent(p graphql.ResolveParams) error {
 }
 
 // Create adds a new User to the database
-func (u *User) Create(p graphql.ResolveParams) error {
+// If it fails, returns a Failed to create error
+func (u *User) Create(p graphql.ResolveParams, rs []Role) error {
 	db := database.Conn
 	ctxUser := p.Context.Value(ContextKeyUser).(User)
 
@@ -126,7 +128,12 @@ func (u *User) Create(p graphql.ResolveParams) error {
 		return errNotAuthorized
 	}
 
-	if err := db.Create(&u); err != nil {
+	ctxLogger.WithFields(logrus.Fields{
+		"Email": u.Email,
+		"Roles": rs,
+	}).Debugln("Creating user with roles")
+
+	if err := db.Create(&u).Model(&u).Association("Roles").Append(rs).Error; err != nil {
 		return errFailedToCreate
 	}
 

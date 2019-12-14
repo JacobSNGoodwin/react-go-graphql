@@ -173,20 +173,16 @@ func createUser(p graphql.ResolveParams) (interface{}, error) {
 		u.ImageURI = imageURI
 	}
 
+	rs := []models.Role{}
 	if inputRoles, ok := user["roles"].([]interface{}); ok {
-		rs := []*models.Role{}
 		for _, r := range inputRoles {
 			if rname, ok := r.(string); ok {
-				rs = append(rs, &models.Role{
-					Name: rname,
-				})
+				rs = append(rs, *models.RoleMap[rname])
 			}
-			u.Roles = rs
 		}
-
 	}
 
-	err := u.Create(p)
+	err := u.Create(p, rs)
 
 	if err != nil {
 		ctxLogger.WithFields(logrus.Fields{
