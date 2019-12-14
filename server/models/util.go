@@ -23,9 +23,10 @@ const ContextKeyUser = contextKey("User")
 const ContextKeyWriter = contextKey("writer")
 
 var (
-	errNotAuthorized        = fmt.Errorf("Not authorized")
 	errFailedToAuthenticate = fmt.Errorf("Failed to authenticate user")
 	errFailedToCreate       = fmt.Errorf("Failed to create resource")
+	errNotAuthorized        = fmt.Errorf("Not authorized")
+	errNotFound             = fmt.Errorf("Not found")
 )
 
 var ctxLogger = logger.CtxLogger

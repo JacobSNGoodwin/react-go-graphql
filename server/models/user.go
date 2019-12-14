@@ -111,7 +111,7 @@ func (u *User) GetCurrent(p graphql.ResolveParams) error {
 	ctxUser := p.Context.Value(ContextKeyUser).(User)
 
 	if uuid.Equal(ctxUser.ID, uuid.Nil) {
-		return errNotAuthorized
+		return errFailedToAuthenticate
 	}
 
 	*u = ctxUser
@@ -135,6 +135,32 @@ func (u *User) Create(p graphql.ResolveParams, rs []Role) error {
 
 	if err := db.Create(&u).Model(&u).Association("Roles").Append(rs).Error; err != nil {
 		return errFailedToCreate
+	}
+
+	return nil
+}
+
+// Update attempts to update an existing user
+func (u *User) Update(p graphql.ResolveParams, updates map[string]interface{}, updateRoles bool, rs []Role) error {
+	db := database.Conn
+
+	ctxUser := p.Context.Value(ContextKeyUser).(User)
+
+	if !hasRole(ctxUser.Roles, "admin") {
+		return errNotAuthorized
+	}
+
+	if err := db.First(&u).Error; err != nil {
+		return errNotFound
+	}
+
+	if updateRoles {
+		// need to clear redis cache since admin has updated user's role. That user will need to
+		// login again
+		db.Model(&u).Updates(updates).Association("Roles").Replace(rs)
+		inmem.Conn.Del(u.ID.String())
+	} else {
+		db.Model(&u).Updates(updates)
 	}
 
 	return nil
