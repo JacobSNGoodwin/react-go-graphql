@@ -2,7 +2,6 @@ package models
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -11,6 +10,7 @@ import (
 	"github.com/maxbrain0/react-go-graphql/server/database"
 	"github.com/maxbrain0/react-go-graphql/server/inmem"
 	uuid "github.com/satori/go.uuid"
+	"github.com/sirupsen/logrus"
 )
 
 // User holds user information and role
@@ -48,17 +48,17 @@ func (u *User) LoginOrCreate(p graphql.ResolveParams) error {
 
 	val, err := json.Marshal(u)
 	if err != nil {
-		return fmt.Errorf("Failed to login user")
+		return errFailedToAuthenticate
 	}
 
 	// user will expire after 24 hours, same with token
 	if err := inmem.Conn.Set(u.ID.String(), val, time.Hour*24).Err(); err != nil {
-		return fmt.Errorf("Failed to login user")
+		return errFailedToAuthenticate
 	}
 
 	// If either token creation or redis store fails, consider login to have failed
 	if err := createAndSendToken(w, u.ID); err != nil {
-		return fmt.Errorf("Failed to login user")
+		return errFailedToAuthenticate
 	}
 	return nil
 }
@@ -69,7 +69,7 @@ func (u *Users) GetAll(p graphql.ResolveParams) error {
 	ctxUser := p.Context.Value(ContextKeyUser).(User)
 
 	if !hasRole(ctxUser.Roles, "admin") {
-		return fmt.Errorf("Not authorized for route")
+		return errNotAuthorized
 	}
 
 	if result :=
@@ -91,7 +91,7 @@ func (u *User) GetByID(p graphql.ResolveParams) error {
 	ctxUser := p.Context.Value(ContextKeyUser).(User)
 
 	if !hasRole(ctxUser.Roles, "admin") {
-		return fmt.Errorf("Not authorized for route")
+		return errNotAuthorized
 	}
 
 	// Find by uuid or email, which should both be unique
@@ -111,9 +111,73 @@ func (u *User) GetCurrent(p graphql.ResolveParams) error {
 	ctxUser := p.Context.Value(ContextKeyUser).(User)
 
 	if uuid.Equal(ctxUser.ID, uuid.Nil) {
-		return fmt.Errorf("You are not logged in")
+		return errFailedToAuthenticate
 	}
 
 	*u = ctxUser
+	return nil
+}
+
+// Create adds a new User to the database
+// If it fails, returns a Failed to create error
+func (u *User) Create(p graphql.ResolveParams, rs []Role) error {
+	db := database.Conn
+	ctxUser := p.Context.Value(ContextKeyUser).(User)
+
+	if !hasRole(ctxUser.Roles, "admin") {
+		return errNotAuthorized
+	}
+
+	ctxLogger.WithFields(logrus.Fields{
+		"Email": u.Email,
+		"Roles": rs,
+	}).Debugln("Creating user with roles")
+
+	if err := db.Create(&u).Model(&u).Association("Roles").Append(rs).Error; err != nil {
+		return errFailedToCreate
+	}
+
+	return nil
+}
+
+// Update attempts to update an existing user
+func (u *User) Update(p graphql.ResolveParams, updates map[string]interface{}, updateRoles bool, rs []Role) error {
+	db := database.Conn
+
+	ctxUser := p.Context.Value(ContextKeyUser).(User)
+
+	if !hasRole(ctxUser.Roles, "admin") {
+		return errNotAuthorized
+	}
+
+	if err := db.First(&u).Error; err != nil {
+		return errNotFound
+	}
+
+	if updateRoles {
+		// need to clear redis cache since admin has updated user's role. That user will need to
+		// login again
+		db.Model(&u).Updates(updates).Association("Roles").Replace(rs)
+		inmem.Conn.Del(u.ID.String())
+	} else {
+		db.Model(&u).Updates(updates)
+	}
+
+	return nil
+}
+
+// Delete removes user with u.ID
+func (u *User) Delete(p graphql.ResolveParams) error {
+	db := database.Conn
+	ctxUser := p.Context.Value(ContextKeyUser).(User)
+
+	if !hasRole(ctxUser.Roles, "admin") {
+		return errNotAuthorized
+	}
+
+	if err := db.Delete(&u).Error; err != nil {
+		return errNotFound
+	}
+
 	return nil
 }

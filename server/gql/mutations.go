@@ -28,5 +28,38 @@ var RootMutation = graphql.NewObject(graphql.ObjectConfig{
 			},
 			Resolve: fbLoginWithToken,
 		},
+		"createUser": &graphql.Field{
+			Type:        userType,
+			Description: "Allows admins to create users",
+			Args: graphql.FieldConfigArgument{
+				"user": &graphql.ArgumentConfig{
+					Type:        userCreateType,
+					Description: "The data payload for the user to add",
+				},
+			},
+			Resolve: createUser,
+		},
+		"editUser": &graphql.Field{
+			Type:        userType,
+			Description: "Allows admins to create users",
+			Args: graphql.FieldConfigArgument{
+				"user": &graphql.ArgumentConfig{
+					Type:        userEditType,
+					Description: "The data payload for the user to edit.",
+				},
+			},
+			Resolve: editUser,
+		},
+		"deleteUser": &graphql.Field{
+			Type:        graphql.String,
+			Description: "Allows admins to delete a user",
+			Args: graphql.FieldConfigArgument{
+				"id": &graphql.ArgumentConfig{
+					Type:        graphql.String,
+					Description: "Deletes the user with the given id and returns the id as confirmation",
+				},
+			},
+			Resolve: deleteUser,
+		},
 	},
 })

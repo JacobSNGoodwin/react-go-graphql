@@ -10,6 +10,7 @@ import (
 	"github.com/graphql-go/graphql"
 	"github.com/maxbrain0/react-go-graphql/server/auth"
 	"github.com/maxbrain0/react-go-graphql/server/models"
+	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 )
 
@@ -141,6 +142,7 @@ func fbLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
 		ImageURI: fbUserData.Picture.Data.URL,
 	}
 
+	// create jwt and send cookie
 	loginErr := user.LoginOrCreate(p)
 
 	if loginErr != nil {
@@ -148,10 +150,106 @@ func fbLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
 			"Email":   user.Email,
 			"Message": loginErr,
 		}).Warn("Unable to login user")
-		return err, nil
+		return nil, err
 	}
 
-	// create jwt and send cookie
-
 	return user, nil
+}
+
+func createUser(p graphql.ResolveParams) (interface{}, error) {
+	u := models.User{}
+
+	user := p.Args["user"].(map[string]interface{})
+
+	// build user model making sure of valid type-assertions
+	if name, ok := user["name"].(string); ok {
+		u.Name = name
+	}
+
+	if email, ok := user["email"].(string); ok {
+		u.Email = email
+	}
+
+	if imageURI, ok := user["imageUri"].(string); ok {
+		u.ImageURI = imageURI
+	}
+
+	rs := []models.Role{}
+	if inputRoles, ok := user["roles"].([]interface{}); ok {
+		for _, r := range inputRoles {
+			if rname, ok := r.(string); ok {
+				rs = append(rs, *models.RoleMap[rname])
+			}
+		}
+	}
+
+	err := u.Create(p, rs)
+
+	if err != nil {
+		ctxLogger.WithFields(logrus.Fields{
+			"Email": u.Email,
+		}).Warn("Unable create user")
+		return nil, err
+	}
+
+	return u, nil
+
+}
+
+func editUser(p graphql.ResolveParams) (interface{}, error) {
+	u := models.User{}
+	user := p.Args["user"].(map[string]interface{})
+	id, err := uuid.FromString(user["id"].(string))
+	if err != nil {
+		return nil, err
+	}
+	u.ID = id
+
+	// we'll build a map as then we can ignore fields the user does not want to update
+	m := make(map[string]interface{})
+	if name, ok := user["name"].(string); ok {
+		m["name"] = name
+	}
+
+	if email, ok := user["email"].(string); ok {
+		m["email"] = email
+	}
+
+	if imageURI, ok := user["imageUri"].(string); ok {
+		m["image_uri"] = imageURI
+	}
+
+	rs := []models.Role{}
+	// determine if we need to update roles as this also requires clearing authorization cache
+	updateRoles := false
+	if inputRoles, ok := user["roles"].([]interface{}); ok {
+		updateRoles = true
+		for _, r := range inputRoles {
+			if rname, ok := r.(string); ok {
+				rs = append(rs, *models.RoleMap[rname])
+			}
+		}
+	}
+
+	err = u.Update(p, m, updateRoles, rs)
+
+	if err != nil {
+		ctxLogger.WithFields(logrus.Fields{
+			"Email": u.Email,
+		}).Warn("Unable create user")
+		return nil, err
+	}
+
+	return u, nil
+}
+
+func deleteUser(p graphql.ResolveParams) (interface{}, error) {
+	u := models.User{}
+	id := p.Args["id"].(string)
+	u.ID = uuid.FromStringOrNil(id)
+	if err := u.Delete(p); err != nil {
+		return nil, err
+	}
+
+	return id, nil
 }
