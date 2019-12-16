@@ -100,6 +100,15 @@ var userEditType = graphql.NewInputObject(
 	},
 )
 
+var errorType = graphql.NewObject(graphql.ObjectConfig{
+	Name:        "Error",
+	Description: "Object to return error information on returned data",
+	Fields: graphql.Fields{
+		"message": &graphql.Field{},
+		"code":    &graphql.Field{},
+	},
+})
+
 var roleEnum = graphql.NewEnum(graphql.EnumConfig{
 	Name:        "Role",
 	Description: "Holds the roles available for this API",

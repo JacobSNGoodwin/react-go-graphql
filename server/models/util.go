@@ -22,13 +22,6 @@ const ContextKeyUser = contextKey("User")
 // ContextKeyWriter used to access writer in http pipeline (for setting cookies outside of middleware)
 const ContextKeyWriter = contextKey("writer")
 
-var (
-	errFailedToAuthenticate = fmt.Errorf("Failed to authenticate user")
-	errFailedToCreate       = fmt.Errorf("Failed to create resource")
-	errNotAuthorized        = fmt.Errorf("Not authorized")
-	errNotFound             = fmt.Errorf("Not found")
-)
-
 var ctxLogger = logger.CtxLogger
 
 // utility functions for models
@@ -56,7 +49,6 @@ func createAndSendToken(w *http.ResponseWriter, id uuid.UUID) error {
 	if err != nil {
 		return err
 	}
-
 	// Split the signed string into two parts for using the two cookie approach
 	split := strings.Split(ss, ".")
 

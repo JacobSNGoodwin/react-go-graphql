@@ -9,6 +9,7 @@ import (
 
 	"github.com/graphql-go/graphql"
 	"github.com/maxbrain0/react-go-graphql/server/auth"
+	"github.com/maxbrain0/react-go-graphql/server/errors"
 	"github.com/maxbrain0/react-go-graphql/server/models"
 	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
@@ -54,20 +55,14 @@ func googleLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
 	idToken, err := auth.GoogleVerifier.Verify(p.Context, rawToken)
 
 	if err != nil {
-		return false, err
+		return nil, errors.NewAuthentication("Invalid credentials", err)
 	}
 
 	var claims GoogleIDClaims
 
 	if err := idToken.Claims(&claims); err != nil {
-		return nil, err
+		return nil, errors.NewAuthentication("Invalid credentials", err)
 	}
-
-	ctxLogger.WithFields(logrus.Fields{
-		"Email":   claims.Email,
-		"Name":    claims.Name,
-		"Picture": claims.Picture,
-	}).Debugln("Successfully verified Google ID Token")
 
 	user := models.User{
 		Email:    claims.Email,
@@ -81,8 +76,8 @@ func googleLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
 		ctxLogger.WithFields(logrus.Fields{
 			"Email":   user.Email,
 			"Message": loginErr,
-		}).Warn("Unable to login user")
-		return err, nil
+		}).Warn("Unable to login user with Google")
+		return nil, loginErr
 	}
 
 	return user, nil
@@ -116,7 +111,7 @@ func fbLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
 
 	// make sure token is Valid
 	if !fbTokenData.Data.IsValid || (os.Getenv("FACEBOOK_CLIENT_ID") != fbTokenData.Data.AppID) {
-		return nil, fmt.Errorf("Facebook access token is invalid for this application")
+		return false, errors.NewAuthentication("Invalid credentials", err)
 	}
 
 	respToken.Body.Close()
@@ -128,7 +123,7 @@ func fbLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
 
 	respUser, err := fbClient.Get(fbUserReqURL)
 	if err != nil {
-		return nil, err
+		return nil, errors.NewAuthentication("Could not validate credentials", nil)
 	}
 
 	defer respUser.Body.Close()
@@ -150,7 +145,7 @@ func fbLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
 			"Email":   user.Email,
 			"Message": loginErr,
 		}).Warn("Unable to login user")
-		return nil, err
+		return nil, loginErr
 	}
 
 	return user, nil
@@ -201,7 +196,7 @@ func editUser(p graphql.ResolveParams) (interface{}, error) {
 	user := p.Args["user"].(map[string]interface{})
 	id, err := uuid.FromString(user["id"].(string))
 	if err != nil {
-		return nil, err
+		return nil, errors.NewInternal("Not a valid UUID", err)
 	}
 	u.ID = id
 
@@ -236,7 +231,7 @@ func editUser(p graphql.ResolveParams) (interface{}, error) {
 	if err != nil {
 		ctxLogger.WithFields(logrus.Fields{
 			"Email": u.Email,
-		}).Warn("Unable create user")
+		}).Warn("Unable to edit user")
 		return nil, err
 	}
 
