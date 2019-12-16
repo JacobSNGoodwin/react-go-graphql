@@ -44,22 +44,22 @@ func (u *User) LoginOrCreate(p graphql.ResolveParams) error {
 		Where(User{Email: u.Email}).
 		Attrs(User{Name: u.Name, ImageURI: u.ImageURI}).
 		FirstOrCreate(&u).Error; err != nil {
-		return err
+		return errors.NewInternal("Internal error logging in user", err)
 	}
 
 	val, err := json.Marshal(u)
 	if err != nil {
-		return errFailedToAuthenticate
+		return errors.NewInternal("Internal error logging in user", err)
 	}
 
 	// user will expire after 24 hours, same with token
 	if err := inmem.Conn.Set(u.ID.String(), val, time.Hour*24).Err(); err != nil {
-		return errFailedToAuthenticate
+		return errors.NewInternal("Internal error logging user", err)
 	}
 
 	// If either token creation or redis store fails, consider login to have failed
 	if err := createAndSendToken(w, u.ID); err != nil {
-		return errFailedToAuthenticate
+		return errors.NewInternal("Internal error logging in user", err)
 	}
 	return nil
 }
@@ -70,7 +70,7 @@ func (u *Users) GetAll(p graphql.ResolveParams) error {
 	ctxUser := p.Context.Value(ContextKeyUser).(User)
 
 	if !hasRole(ctxUser.Roles, "admin") {
-		return errNotAuthorized
+		return errors.NewForbidden("Not authorized", nil)
 	}
 
 	if result :=
@@ -80,7 +80,7 @@ func (u *Users) GetAll(p graphql.ResolveParams) error {
 			Offset(p.Args["offset"].(int)).
 			Preload("Roles").
 			Find(&u); result.Error != nil {
-		return nil
+		return result.Error
 	}
 
 	return nil
@@ -92,15 +92,16 @@ func (u *User) GetByID(p graphql.ResolveParams) error {
 	ctxUser := p.Context.Value(ContextKeyUser).(User)
 
 	if !hasRole(ctxUser.Roles, "admin") {
-		return errNotAuthorized
+		return errors.NewForbidden("Not authorized", nil)
 	}
 
 	// Find by uuid or email, which should both be unique
-	if result := db.
+	if err := db.
 		Preload("Roles").
 		Where("id = ?", uuid.FromStringOrNil(p.Args["id"].(string))).
-		Find(&u); result.Error != nil {
-		return result.Error
+		Find(&u).Error; err != nil {
+		ctxLogger.WithError(err).Debugln("DB Error finding user by ID")
+		return errors.NewInternal("Error finding user", nil)
 	}
 
 	return nil
@@ -126,7 +127,7 @@ func (u *User) Create(p graphql.ResolveParams, rs []Role) error {
 	ctxUser := p.Context.Value(ContextKeyUser).(User)
 
 	if !hasRole(ctxUser.Roles, "admin") {
-		return errNotAuthorized
+		return errors.NewForbidden("Not authorized", nil)
 	}
 
 	ctxLogger.WithFields(logrus.Fields{
@@ -135,7 +136,8 @@ func (u *User) Create(p graphql.ResolveParams, rs []Role) error {
 	}).Debugln("Creating user with roles")
 
 	if err := db.Create(&u).Model(&u).Association("Roles").Append(rs).Error; err != nil {
-		return errFailedToCreate
+		ctxLogger.WithError(err).Debugln("DB Error creating user")
+		return errors.NewInternal("Error creating user", nil)
 	}
 
 	return nil
@@ -148,11 +150,12 @@ func (u *User) Update(p graphql.ResolveParams, updates map[string]interface{}, u
 	ctxUser := p.Context.Value(ContextKeyUser).(User)
 
 	if !hasRole(ctxUser.Roles, "admin") {
-		return errNotAuthorized
+		return errors.NewForbidden("Not authorized", nil)
 	}
 
 	if err := db.First(&u).Error; err != nil {
-		return errNotFound
+		ctxLogger.WithError(err).Debugln("DB Error updating user")
+		return errors.NewInternal("Error updating user", nil)
 	}
 
 	if updateRoles {
@@ -173,11 +176,12 @@ func (u *User) Delete(p graphql.ResolveParams) error {
 	ctxUser := p.Context.Value(ContextKeyUser).(User)
 
 	if !hasRole(ctxUser.Roles, "admin") {
-		return errNotAuthorized
+		return errors.NewForbidden("Not authorized", nil)
 	}
 
 	if err := db.Delete(&u).Error; err != nil {
-		return errNotFound
+		ctxLogger.WithError(err).Debugln("DB Error deleting user")
+		return errors.NewInternal("Error deleting user", nil)
 	}
 
 	return nil

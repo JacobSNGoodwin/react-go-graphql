@@ -7,10 +7,10 @@ type Type string
 
 // Model error types after apollo server for now
 const (
-	Authentication Type = "UNAUTHENTICATED" // Authentication Failures
-	Forbidden      Type = "FORBIDDEN"       // Authorization failutre
-	Input          Type = "INPUT"           // Validation errors (already exists, not found)
-	Internal       Type = "INTERNAL"        // Fallback for uncaught failures
+	Authentication Type = "AUTHENTICATION" // Authentication Failures
+	Forbidden      Type = "FORBIDDEN"      // Authorization failutre
+	Input          Type = "INPUT"          // Validation errors (already exists, not found)
+	Internal       Type = "INTERNAL"       // Fallback for uncaught failures
 )
 
 // Error holds custom error types/codes using graphql-go error extensions interface
