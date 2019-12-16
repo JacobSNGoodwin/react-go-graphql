@@ -112,7 +112,7 @@ func (u *User) GetCurrent(p graphql.ResolveParams) error {
 	ctxUser := p.Context.Value(ContextKeyUser).(User)
 
 	if uuid.Equal(ctxUser.ID, uuid.Nil) {
-		return errors.NewAuthenticationError("User is not logged")
+		return errors.NewAuthentication("User is not logged in", nil)
 	}
 
 	*u = ctxUser
