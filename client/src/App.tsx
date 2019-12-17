@@ -1,5 +1,6 @@
 import React from "react";
 import "./App.scss";
+import "bulma/bulma.sass";
 import {
   GoogleLogin,
   GoogleLoginResponse,
