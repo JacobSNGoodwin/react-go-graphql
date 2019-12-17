@@ -70,7 +70,7 @@ func googleLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
 		ImageURI: claims.Picture,
 	}
 
-	loginErr := user.LoginOrCreate(p)
+	loginErr := user.Login(p)
 
 	if loginErr != nil {
 		ctxLogger.WithFields(logrus.Fields{
@@ -138,7 +138,7 @@ func fbLoginWithToken(p graphql.ResolveParams) (interface{}, error) {
 	}
 
 	// create jwt and send cookie
-	loginErr := user.LoginOrCreate(p)
+	loginErr := user.Login(p)
 
 	if loginErr != nil {
 		ctxLogger.WithFields(logrus.Fields{

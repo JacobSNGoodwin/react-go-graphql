@@ -32,9 +32,9 @@ type UserClaims struct {
 // Users holds an array of users
 type Users []User
 
-// LoginOrCreate takes the current user and logs them in if they exist.
+// Login takes the current user and logs them in if they exist.
 // It creates the user if the user doesn't yet exist
-func (u *User) LoginOrCreate(p graphql.ResolveParams) error {
+func (u *User) Login(p graphql.ResolveParams) error {
 	// Add error checking
 	db := database.Conn
 	w := p.Context.Value(ContextKeyWriter).(*http.ResponseWriter)
@@ -43,8 +43,8 @@ func (u *User) LoginOrCreate(p graphql.ResolveParams) error {
 		Preload("Roles").
 		Where(User{Email: u.Email}).
 		Attrs(User{Name: u.Name, ImageURI: u.ImageURI}).
-		FirstOrCreate(&u).Error; err != nil {
-		return errors.NewInternal("Internal error logging in user", err)
+		First(&u).Error; err != nil {
+		return errors.NewInternal("User not found", err)
 	}
 
 	val, err := json.Marshal(u)
@@ -179,8 +179,27 @@ func (u *User) Delete(p graphql.ResolveParams) error {
 		return errors.NewForbidden("Not authorized", nil)
 	}
 
-	if err := db.Delete(&u).Error; err != nil {
+	// create a transacation to make sure both roles are unassociated and user is deleted
+	tx := db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if err := tx.Model(&u).Association("Roles").Clear().Error; err != nil {
 		ctxLogger.WithError(err).Debugln("DB Error deleting user")
+		tx.Rollback()
+		errors.NewInternal("Error deleting user", nil)
+	}
+
+	if err := tx.Delete(&u).Error; err != nil {
+		ctxLogger.WithError(err).Debugln("DB Error deleting user")
+		tx.Rollback()
+		return errors.NewInternal("Error deleting user", nil)
+	}
+
+	if err := tx.Commit().Error; err != nil {
 		return errors.NewInternal("Error deleting user", nil)
 	}
 
