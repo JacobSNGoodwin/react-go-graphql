@@ -179,8 +179,27 @@ func (u *User) Delete(p graphql.ResolveParams) error {
 		return errors.NewForbidden("Not authorized", nil)
 	}
 
-	if err := db.Delete(&u).Error; err != nil {
+	// create a transacation to make sure both roles are unassociated and user is deleted
+	tx := db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if err := tx.Model(&u).Association("Roles").Clear().Error; err != nil {
 		ctxLogger.WithError(err).Debugln("DB Error deleting user")
+		tx.Rollback()
+		errors.NewInternal("Error deleting user", nil)
+	}
+
+	if err := tx.Delete(&u).Error; err != nil {
+		ctxLogger.WithError(err).Debugln("DB Error deleting user")
+		tx.Rollback()
+		return errors.NewInternal("Error deleting user", nil)
+	}
+
+	if err := tx.Commit().Error; err != nil {
 		return errors.NewInternal("Error deleting user", nil)
 	}
 
