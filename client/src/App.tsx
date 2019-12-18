@@ -8,8 +8,6 @@ const App: React.FC = () => {
   return (
     <>
       <Navbar />
-      <h1 className="is-size-3">Hello from App!</h1>
-
       <div className="container has-text-centered">
         <Router>
           <Login path="login" />
