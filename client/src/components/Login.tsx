@@ -1,4 +1,5 @@
 import React from "react";
+import styles from "./Login.module.scss";
 
 import {
   GoogleLogin,
@@ -38,24 +39,22 @@ const login: React.FC = () => {
         onFailure={responseGoogle}
         render={renderProps => (
           <button
-            className={`button is-large`}
+            className={`${styles.button} button is-large`}
             onClick={renderProps.onClick}
             disabled={renderProps.disabled}
           >
-            <span className="icon is-large">
-              <GoogleIcon width="30px" height="30px" />
-            </span>
-            <span>Sign In</span>
+            <GoogleIcon width="36px" height="36px" />
+            Sign In
           </button>
         )}
       />
+
       <FacebookLogin
         appId={fbClientid}
         textButton="Sign In"
-        typeButton="medium"
         fields="name,email,picture"
         callback={responseFacebook}
-        cssClass={`button is-large`}
+        cssClass={`${styles.button} button is-large`}
         icon={<FacebookIcon width="36px" height="36px" />}
       />
     </div>

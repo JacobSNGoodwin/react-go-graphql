@@ -6,7 +6,7 @@ import "./App.scss";
 const App: React.FC = () => {
   return (
     <div className="container has-text-centered">
-      <h1>Hello from App!</h1>
+      <h1 className="is-size-3">Hello from App!</h1>
       <Login />
     </div>
   );
