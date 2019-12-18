@@ -7,11 +7,13 @@ import {
   GoogleLoginResponseOffline
 } from "react-google-login";
 
+import { RouteComponentProps } from "@reach/router";
+
 import FacebookLogin, { ReactFacebookLoginInfo } from "react-facebook-login";
 import FacebookIcon from "./icons/Facebook";
 import GoogleIcon from "./icons/Google";
 
-const login: React.FC = () => {
+const login: React.FC<RouteComponentProps> = props => {
   const responseGoogle = (
     res: GoogleLoginResponse | GoogleLoginResponseOffline
   ) => {
@@ -32,7 +34,7 @@ const login: React.FC = () => {
     : "";
 
   return (
-    <div className="App">
+    <>
       <GoogleLogin
         clientId={googleClientid}
         onSuccess={responseGoogle}
@@ -57,7 +59,7 @@ const login: React.FC = () => {
         cssClass={`${styles.button} button is-large`}
         icon={<FacebookIcon width="36px" height="36px" />}
       />
-    </div>
+    </>
   );
 };
 
