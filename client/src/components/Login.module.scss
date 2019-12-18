@@ -1,0 +1,12 @@
+@mixin defaultButton {
+  padding: 5em;
+}
+
+.googleButton {
+  @include defaultButton;
+  background-color: green;
+}
+
+.facebookButton {
+  @include defaultButton;
+}
