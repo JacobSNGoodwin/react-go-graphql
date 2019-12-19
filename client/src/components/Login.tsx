@@ -9,21 +9,27 @@ import {
 
 import { RouteComponentProps } from "@reach/router";
 
+import { AuthContext } from "./contexts/AuthContext";
+
 import FacebookLogin, { ReactFacebookLoginInfo } from "react-facebook-login";
 import FacebookIcon from "./icons/Facebook";
 import GoogleIcon from "./icons/Google";
 
-const login: React.FC<RouteComponentProps> = props => {
+const Login: React.FC<RouteComponentProps> = props => {
+  const authContext = React.useContext(AuthContext);
+
   const responseGoogle = (
     res: GoogleLoginResponse | GoogleLoginResponseOffline
   ) => {
     if ((res as GoogleLoginResponse).getAuthResponse) {
       console.log((res as GoogleLoginResponse).getAuthResponse().id_token);
+      authContext.login();
     }
   };
 
   const responseFacebook = (res: ReactFacebookLoginInfo) => {
     console.log(res);
+    authContext.logout();
   };
 
   const googleClientid: string = process.env.REACT_APP_GOOGLE_CLIENT_ID
@@ -35,32 +41,50 @@ const login: React.FC<RouteComponentProps> = props => {
 
   return (
     <>
-      <GoogleLogin
-        clientId={googleClientid}
-        onSuccess={responseGoogle}
-        onFailure={responseGoogle}
-        render={renderProps => (
-          <button
-            className={`${styles.button} button is-large`}
-            onClick={renderProps.onClick}
-            disabled={renderProps.disabled}
-          >
-            <GoogleIcon width="36px" height="36px" />
-            Sign In
-          </button>
-        )}
-      />
+      <div className="section">
+        {authContext.loading ? (
+          <div className="loader"></div>
+        ) : (
+          <div className="buttons is-centered">
+            <GoogleLogin
+              clientId={googleClientid}
+              onSuccess={responseGoogle}
+              onFailure={responseGoogle}
+              render={renderProps => (
+                <button
+                  className={`${styles.button} button is-large`}
+                  onClick={renderProps.onClick}
+                  disabled={renderProps.disabled}
+                >
+                  <GoogleIcon width="36px" height="36px" />
+                  Sign In
+                </button>
+              )}
+            />
 
-      <FacebookLogin
-        appId={fbClientid}
-        textButton="Sign In"
-        fields="name,email,picture"
-        callback={responseFacebook}
-        cssClass={`${styles.button} button is-large`}
-        icon={<FacebookIcon width="36px" height="36px" />}
-      />
+            <FacebookLogin
+              appId={fbClientid}
+              textButton="Sign In"
+              fields="name,email,picture"
+              callback={responseFacebook}
+              cssClass={`${styles.button} button is-large`}
+              icon={<FacebookIcon width="36px" height="36px" />}
+            />
+          </div>
+        )}
+
+        <div className="content">
+          <p>
+            User authenticated? - {authContext.authenticated ? "true" : "false"}
+          </p>
+          <h3>User Roles</h3>
+          {authContext.roles.map(role => (
+            <ul>{role}</ul>
+          ))}
+        </div>
+      </div>
     </>
   );
 };
 
-export default login;
+export default Login;

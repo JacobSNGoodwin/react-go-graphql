@@ -1,10 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 
 interface IAuthContext {
   authenticated: boolean;
   loading: boolean;
-  roles: Array<string>;
-  login(token: string): void;
+  roles: string[];
+  login(): void;
   logout(): void;
 }
 
@@ -20,31 +20,30 @@ const defaultAuth: IAuthContext = {
 const AuthContext = React.createContext<IAuthContext>(defaultAuth);
 
 const AuthProvider: React.FC = props => {
-  let authenticated = false;
-  let roles: string[] = [];
-  let loading: boolean = false;
+  // useState for these properties
+  const [authenticated, setAuthenticated] = useState<boolean>(false);
+  const [roles, setRoles] = useState<string[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
 
   // Fetch user from jwt cookie that is js accessible
 
   // Add login functions (for setting state here)
-  const login = (token: string) => {
-    if (token) {
-      loading = true;
-      // timeout just to show a spinner or something
-      setTimeout(() => {}, 1000);
-      authenticated = true;
-      loading = false;
-      roles.push("admin", "editor");
-    }
+  const login = () => {
+    setLoading(true);
+    setTimeout(() => {
+      setAuthenticated(true);
+      setRoles(["admin", "editor"]);
+      setLoading(false);
+    }, 1000);
   };
 
-  // Add login functions (for setting state here)
   const logout = () => {
-    loading = true;
-    setTimeout(() => {}, 1000);
-    authenticated = true;
-    loading = false;
-    roles = [];
+    setLoading(true);
+    setTimeout(() => {
+      setAuthenticated(false);
+      setRoles([]);
+      setLoading(false);
+    }, 1000);
   };
 
   return (
@@ -57,11 +56,10 @@ const AuthProvider: React.FC = props => {
         logout
       }}
       {...props}
-    />
+    >
+      {props.children}
+    </AuthContext.Provider>
   );
 };
 
-// Example returns a function that returns the context
-const useAuth = React.useContext(AuthContext);
-
-export { AuthProvider, useAuth };
+export { AuthProvider, AuthContext };
