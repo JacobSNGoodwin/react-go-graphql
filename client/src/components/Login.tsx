@@ -1,4 +1,6 @@
 import React from "react";
+
+import Spinner from "./ui/Spinner";
 import styles from "./Login.module.scss";
 
 import {
@@ -42,36 +44,36 @@ const Login: React.FC<RouteComponentProps> = props => {
   return (
     <>
       <div className="section">
-        {authContext.loading ? (
-          <div className="loader"></div>
-        ) : (
-          <div className="buttons is-centered">
-            <GoogleLogin
-              clientId={googleClientid}
-              onSuccess={responseGoogle}
-              onFailure={responseGoogle}
-              render={renderProps => (
-                <button
-                  className={`${styles.button} button is-large`}
-                  onClick={renderProps.onClick}
-                  disabled={renderProps.disabled}
-                >
-                  <GoogleIcon width="36px" height="36px" />
-                  Sign In
-                </button>
-              )}
-            />
+        <div className="buttons is-centered">
+          <GoogleLogin
+            clientId={googleClientid}
+            onSuccess={responseGoogle}
+            onFailure={responseGoogle}
+            render={renderProps => (
+              <button
+                className={`${styles.button} button is-large`}
+                onClick={renderProps.onClick}
+                disabled={renderProps.disabled}
+              >
+                <GoogleIcon width="36px" height="36px" />
+                Sign In
+              </button>
+            )}
+          />
 
-            <FacebookLogin
-              appId={fbClientid}
-              textButton="Sign In"
-              fields="name,email,picture"
-              callback={responseFacebook}
-              cssClass={`${styles.button} button is-large`}
-              icon={<FacebookIcon width="36px" height="36px" />}
-            />
-          </div>
-        )}
+          <FacebookLogin
+            appId={fbClientid}
+            textButton="Sign In"
+            fields="name,email,picture"
+            callback={responseFacebook}
+            cssClass={`${styles.button} button is-large`}
+            icon={<FacebookIcon width="36px" height="36px" />}
+          />
+        </div>
+
+        <div className="columns is-centered">
+          {authContext.loading && <Spinner radius={40} />}
+        </div>
 
         <div className="content">
           <p>
