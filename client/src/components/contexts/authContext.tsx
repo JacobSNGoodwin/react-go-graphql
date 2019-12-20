@@ -1,10 +1,13 @@
 import React, { useState } from "react";
 
+import { useMutation } from "@apollo/react-hooks";
+import { gql } from "apollo-boost";
+
 interface IAuthContext {
   authenticated: boolean;
   loading: boolean;
   roles: string[];
-  login(): void;
+  loginWithGoogle(token: string): void;
   logout(): void;
 }
 
@@ -13,9 +16,21 @@ const defaultAuth: IAuthContext = {
   authenticated: false,
   loading: false,
   roles: [],
-  login: () => {},
+  loginWithGoogle: () => {}, // produce error if not overwritten in Provider?
   logout: () => {}
 };
+
+const LOGIN_GOOGLE = gql`
+  mutation LoginGoogle($idToken: String!) {
+    googleLoginWithToken(idToken: $idToken) {
+      id
+      name
+      email
+      imageUri
+      roles
+    }
+  }
+`;
 
 const AuthContext = React.createContext<IAuthContext>(defaultAuth);
 
@@ -24,17 +39,40 @@ const AuthProvider: React.FC = props => {
   const [authenticated, setAuthenticated] = useState<boolean>(false);
   const [roles, setRoles] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [
+    loginGoogleMutation,
+    {
+      data: googleData,
+      loading: googleLoading,
+      error: googleError,
+      called: googleCalled
+    }
+  ] = useMutation(LOGIN_GOOGLE);
 
   // Fetch user from jwt cookie that is js accessible
 
   // Add login functions (for setting state here)
-  const login = () => {
-    setLoading(true);
-    setTimeout(() => {
-      setAuthenticated(true);
-      setRoles(["admin", "editor"]);
+  const loginWithGoogle = (token: string) => {
+    // will use callback here since we maintain loading state for the auth provider in this component
+    loginGoogleMutation({
+      variables: {
+        idToken: token
+      }
+    });
+
+    if (googleLoading) {
+      setLoading(true);
+    }
+
+    if (googleCalled && !googleLoading) {
       setLoading(false);
-    }, 1000);
+      if (googleData) {
+        console.log(googleData);
+      }
+      if (googleError) {
+        console.log(googleError);
+      }
+    }
   };
 
   const logout = () => {
@@ -52,7 +90,7 @@ const AuthProvider: React.FC = props => {
         authenticated,
         loading,
         roles,
-        login,
+        loginWithGoogle,
         logout
       }}
       {...props}

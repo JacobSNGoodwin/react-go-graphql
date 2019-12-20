@@ -24,8 +24,8 @@ const Login: React.FC<RouteComponentProps> = props => {
     res: GoogleLoginResponse | GoogleLoginResponseOffline
   ) => {
     if ((res as GoogleLoginResponse).getAuthResponse) {
-      console.log((res as GoogleLoginResponse).getAuthResponse().id_token);
-      authContext.login();
+      const token = (res as GoogleLoginResponse).getAuthResponse().id_token;
+      authContext.loginWithGoogle(token);
     }
   };
 
