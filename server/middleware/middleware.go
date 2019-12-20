@@ -29,6 +29,8 @@ func HTTPMiddleware(c *Config) http.Handler {
 		ctx = context.WithValue(ctx, models.ContextKeyWriter, &w)
 
 		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding")
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		c.GQLHandler.ContextHandler(ctx, w, r)
 	})
