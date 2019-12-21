@@ -25,13 +25,13 @@ const Login: React.FC<RouteComponentProps> = props => {
   ) => {
     if ((res as GoogleLoginResponse).getAuthResponse) {
       const token = (res as GoogleLoginResponse).getAuthResponse().id_token;
+
       authContext.loginWithGoogle(token);
     }
   };
 
   const responseFacebook = (res: ReactFacebookLoginInfo) => {
-    console.log(res);
-    authContext.logout();
+    authContext.loginWithFacebook(res.accessToken);
   };
 
   const googleClientid: string = process.env.REACT_APP_GOOGLE_CLIENT_ID
@@ -77,12 +77,23 @@ const Login: React.FC<RouteComponentProps> = props => {
 
         <div className="content">
           <p>
-            User authenticated? - {authContext.authenticated ? "true" : "false"}
+            User authenticated? -{" "}
+            {authContext.user ? authContext.user.id : "no user"}
           </p>
           <h3>User Roles</h3>
-          {authContext.roles.map(role => (
-            <ul>{role}</ul>
-          ))}
+          <ul>
+            {authContext.user &&
+              authContext.user.roles.map(role => <li key={role}>{role}</li>)}
+          </ul>
+          <h3>Errors</h3>
+          <ul>
+            {authContext.errors &&
+              authContext.errors.map((error, i) => (
+                <li key={i}>
+                  {error.type}, {error.message}
+                </li>
+              ))}
+          </ul>
         </div>
       </div>
     </>

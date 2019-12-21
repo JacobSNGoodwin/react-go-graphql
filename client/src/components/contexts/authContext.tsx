@@ -1,96 +1,124 @@
 import React, { useState } from "react";
 
 import { useMutation } from "@apollo/react-hooks";
-import { gql } from "apollo-boost";
+import { LOGIN_GOOGLE, LOGIN_FACEBOOK } from "../../gql/mutations";
 
 interface IAuthContext {
-  authenticated: boolean;
+  user: IUser | undefined;
   loading: boolean;
-  roles: string[];
+  errors: IError[];
   loginWithGoogle(token: string): void;
+  loginWithFacebook(token: string): void;
   logout(): void;
+}
+
+interface IError {
+  message: string;
+  type: string | undefined;
+}
+
+interface IUser {
+  id: string;
+  name?: string;
+  email: string;
+  imageUri?: string;
+  roles: string[];
 }
 
 // maybe add error if login/logout aren't defined in Auth provided
 const defaultAuth: IAuthContext = {
-  authenticated: false,
+  user: undefined,
   loading: false,
-  roles: [],
+  errors: [],
   loginWithGoogle: () => {}, // produce error if not overwritten in Provider?
+  loginWithFacebook: () => {},
   logout: () => {}
 };
-
-const LOGIN_GOOGLE = gql`
-  mutation LoginGoogle($idToken: String!) {
-    googleLoginWithToken(idToken: $idToken) {
-      id
-      name
-      email
-      imageUri
-      roles
-    }
-  }
-`;
 
 const AuthContext = React.createContext<IAuthContext>(defaultAuth);
 
 const AuthProvider: React.FC = props => {
   // useState for these properties
-  const [authenticated, setAuthenticated] = useState<boolean>(false);
-  const [roles, setRoles] = useState<string[]>([]);
+  const [user, setUser] = useState<IUser | undefined>(undefined);
+  const [errors, setErrors] = useState<IError[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [
-    loginGoogleMutation,
-    {
-      data: googleData,
-      loading: googleLoading,
-      error: googleError,
-      called: googleCalled
+  const [loginGoogleMutation] = useMutation<
+    { googleLoginWithToken: IUser },
+    { idToken: string }
+  >(LOGIN_GOOGLE, {
+    errorPolicy: "ignore",
+    onCompleted: ({ googleLoginWithToken }) => {
+      setUser(googleLoginWithToken);
+      setLoading(false);
+    },
+    onError: error => {
+      const errors = error.graphQLErrors.map(error => {
+        const type = error.extensions ? error.extensions.type : undefined;
+        return {
+          message: error.message,
+          type: type
+        };
+      });
+      setErrors(errors);
+      setLoading(false);
     }
-  ] = useMutation(LOGIN_GOOGLE);
+  });
 
-  // Fetch user from jwt cookie that is js accessible
+  const [loginFacebookMutation] = useMutation<
+    { fbLoginWithToken: IUser },
+    { accessToken: string }
+  >(LOGIN_FACEBOOK, {
+    errorPolicy: "ignore",
+    onCompleted: ({ fbLoginWithToken }) => {
+      setUser(fbLoginWithToken);
+      setLoading(false);
+    },
+    onError: error => {
+      const errors = error.graphQLErrors.map(error => {
+        const type = error.extensions ? error.extensions.type : undefined;
+        return {
+          message: error.message,
+          type: type
+        };
+      });
+      setErrors(errors);
+      setLoading(false);
+    }
+  });
 
   // Add login functions (for setting state here)
   const loginWithGoogle = (token: string) => {
-    // will use callback here since we maintain loading state for the auth provider in this component
+    setLoading(true);
+
     loginGoogleMutation({
       variables: {
         idToken: token
       }
     });
+  };
 
-    if (googleLoading) {
-      setLoading(true);
-    }
+  const loginWithFacebook = (token: string) => {
+    setLoading(true);
 
-    if (googleCalled && !googleLoading) {
-      setLoading(false);
-      if (googleData) {
-        console.log(googleData);
+    loginFacebookMutation({
+      variables: {
+        accessToken: token
       }
-      if (googleError) {
-        console.log(googleError);
-      }
-    }
+    });
   };
 
   const logout = () => {
-    setLoading(true);
-    setTimeout(() => {
-      setAuthenticated(false);
-      setRoles([]);
-      setLoading(false);
-    }, 1000);
+    console.log("logging out");
   };
 
   return (
     <AuthContext.Provider
       value={{
-        authenticated,
+        user,
         loading,
-        roles,
+        errors,
         loginWithGoogle,
+        loginWithFacebook,
         logout
       }}
       {...props}
