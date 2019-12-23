@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useMutation } from "@apollo/react-hooks";
-import Cookies from "js-cookie";
-import jwt from "jsonwebtoken";
+import { getUserFromCookie } from "../../util/util";
 
 import { LOGIN_GOOGLE, LOGIN_FACEBOOK } from "../../gql/mutations";
 
@@ -13,7 +12,6 @@ interface IAuthContext {
   loginWithFacebook(token: string): void;
   logout(): void;
 }
-
 interface IError {
   message: string;
   type: string | undefined;
@@ -40,15 +38,10 @@ const defaultAuth: IAuthContext = {
 const AuthContext = React.createContext<IAuthContext>(defaultAuth);
 
 const AuthProvider: React.FC = props => {
-  // get userID from userinfo cookie which holds the id of authorized user
-  const userCookie = Cookies.get("userinfo");
-  if (userCookie) {
-    console.log(userCookie);
-    const decoded = jwt.decode(userCookie + ".");
-    if (decoded && typeof decoded == "object") {
-      console.log(decoded["id"]);
-    }
-  }
+  // get useriD from cookie
+  const initUserID = getUserFromCookie();
+
+  console.log(initUserID);
 
   // useState for these properties
   const [user, setUser] = useState<IUser | undefined>(undefined);
