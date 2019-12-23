@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 
 import { useMutation } from "@apollo/react-hooks";
+import Cookies from "js-cookie";
 import { LOGIN_GOOGLE, LOGIN_FACEBOOK } from "../../gql/mutations";
 
 interface IAuthContext {
@@ -38,6 +39,11 @@ const defaultAuth: IAuthContext = {
 const AuthContext = React.createContext<IAuthContext>(defaultAuth);
 
 const AuthProvider: React.FC = props => {
+  // get userID from userinfo cookie which holds the id of authorized user
+  const userCookie = Cookies.get("userinfo");
+
+  console.log("The user cookie: ", userCookie);
+
   // useState for these properties
   const [user, setUser] = useState<IUser | undefined>(undefined);
   const [errors, setErrors] = useState<IError[]>([]);

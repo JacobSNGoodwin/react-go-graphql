@@ -9,7 +9,11 @@ import Navbar from "./components/Navbar";
 import "./App.scss";
 
 const client = new ApolloClient({
-  uri: process.env.REACT_APP_URI_GQL
+  uri: process.env.REACT_APP_URI_GQL,
+  credentials: "include",
+  headers: {
+    "X-Requested-With": "XMLHttpRequest"
+  }
 });
 
 const App: React.FC = () => {
