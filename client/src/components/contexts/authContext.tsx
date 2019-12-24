@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useMutation } from "@apollo/react-hooks";
+import Cookies from "js-cookie";
 import { getUserFromCookie } from "../../util/util";
 
 import { LOGIN_GOOGLE, LOGIN_FACEBOOK } from "../../gql/mutations";
@@ -38,11 +39,6 @@ const defaultAuth: IAuthContext = {
 const AuthContext = React.createContext<IAuthContext>(defaultAuth);
 
 const AuthProvider: React.FC = props => {
-  // get useriD from cookie
-  const initUserID = getUserFromCookie();
-
-  console.log(initUserID);
-
   // useState for these properties
   const [user, setUser] = useState<IUser | undefined>(undefined);
   const [errors, setErrors] = useState<IError[]>([]);
@@ -91,6 +87,13 @@ const AuthProvider: React.FC = props => {
     }
   });
 
+  // get useriD from cookie
+  // Any changes will require us to clear the user
+  const cookieUID = getUserFromCookie();
+  if (user && cookieUID !== user.id) {
+    setUser(undefined);
+  }
+
   // Add login functions (for setting state here)
   const loginWithGoogle = (token: string) => {
     setLoading(true);
@@ -113,7 +116,8 @@ const AuthProvider: React.FC = props => {
   };
 
   const logout = () => {
-    console.log("logging out");
+    Cookies.remove("userinfo");
+    setUser(undefined);
   };
 
   return (
