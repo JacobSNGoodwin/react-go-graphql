@@ -90,7 +90,7 @@ const AuthProvider: React.FC = props => {
   // lazy query to fetch me only on initial load
   // in the future we could do this more frequently
   const [getMe] = useLazyQuery<{ me: IUser }>(ME, {
-    errorPolicy: "ignore",
+    errorPolicy: "none",
     onCompleted: ({ me }) => {
       setUser(me);
       setLoading(false);
@@ -112,7 +112,12 @@ const AuthProvider: React.FC = props => {
   // attempt to load user from me
   useEffect(() => {
     setLoading(true);
-    getMe();
+    if (Cookies.get("userinfo")) {
+      // only attempt to get user if a cookie is present
+      getMe();
+    } else {
+      setLoading(false);
+    }
   }, [getMe]);
 
   // Add login functions (for setting state here)
