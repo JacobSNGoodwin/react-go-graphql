@@ -4,8 +4,10 @@ import { ApolloProvider } from "@apollo/react-hooks";
 import ApolloClient from "apollo-boost";
 
 import { AuthProvider } from "./components/contexts/AuthContext";
-import Login from "./components/Login";
 import Navbar from "./components/Navbar";
+import Login from "./components/Login";
+import Users from "./components/Users";
+import PrivateRoute from "./components/PrivateRoute";
 import "./App.scss";
 
 const client = new ApolloClient({
@@ -24,6 +26,7 @@ const App: React.FC = () => {
         <div className="container has-text-centered">
           <Router>
             <Login path="login" />
+            <PrivateRoute as={Users} allowedRoles={["Admin"]} path="users" />
           </Router>
         </div>
       </AuthProvider>

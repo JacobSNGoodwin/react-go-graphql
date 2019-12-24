@@ -14,3 +14,16 @@ export const getUserFromCookie = function(): string | undefined {
 
   return decoded["id"]; // should return string or undefined if key doesn't exist
 };
+
+export const hasRequiredRole = function(
+  userRoles: string[],
+  allowedRoles: string[]
+): boolean {
+  for (let i = 0; i < allowedRoles.length; i++) {
+    if (userRoles.includes(allowedRoles[i])) {
+      return true;
+    }
+  }
+
+  return false;
+};
