@@ -1,9 +1,9 @@
-import React, { useState } from "react";
-import { useMutation } from "@apollo/react-hooks";
+import React, { useState, useEffect } from "react";
+import { useMutation, useLazyQuery } from "@apollo/react-hooks";
 import Cookies from "js-cookie";
-import { getUserFromCookie } from "../../util/util";
 
 import { LOGIN_GOOGLE, LOGIN_FACEBOOK } from "../../gql/mutations";
+import { ME } from "../../gql/queries";
 
 interface IAuthContext {
   user: IUser | undefined;
@@ -87,12 +87,33 @@ const AuthProvider: React.FC = props => {
     }
   });
 
-  // get useriD from cookie
-  // Any changes will require us to clear the user
-  const cookieUID = getUserFromCookie();
-  if (user && cookieUID !== user.id) {
-    setUser(undefined);
-  }
+  // lazy query to fetch me only on initial load
+  // in the future we could do this more frequently
+  const [getMe] = useLazyQuery<{ me: IUser }>(ME, {
+    errorPolicy: "ignore",
+    onCompleted: ({ me }) => {
+      setUser(me);
+      setLoading(false);
+    },
+    onError: error => {
+      const errors = error.graphQLErrors.map(error => {
+        const type = error.extensions ? error.extensions.type : undefined;
+        return {
+          message: error.message,
+          type: type
+        };
+      });
+      setErrors(errors);
+      setLoading(false);
+    }
+  });
+
+  // get useriD from cookie on initial load
+  // attempt to load user from me
+  useEffect(() => {
+    setLoading(true);
+    getMe();
+  }, [getMe]);
 
   // Add login functions (for setting state here)
   const loginWithGoogle = (token: string) => {
