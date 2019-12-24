@@ -26,16 +26,19 @@ const Navbar: React.FC = props => {
           </Link>
         </div>
         <div className="navbar-end">
-          <div className="navbar-item">
-            <Link to="/login" className="button is-link">
-              Sign In
-            </Link>
-          </div>
-          <div className="navbar-item">
-            <button onClick={authContext.logout} className="button is-link">
-              Sign Out
-            </button>
-          </div>
+          {authContext.user ? (
+            <div className="navbar-item">
+              <button onClick={authContext.logout} className="button is-link">
+                Sign Out
+              </button>
+            </div>
+          ) : (
+            <div className="navbar-item">
+              <Link to="/login" className="button is-link">
+                Sign In
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </nav>
