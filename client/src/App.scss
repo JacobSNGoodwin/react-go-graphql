@@ -8,3 +8,8 @@ $warning: #45009e;
 $link: $secondary;
 
 @import "~bulma/bulma.sass";
+
+.card {
+  margin-top: 2em;
+  margin-bottom: 2em;
+}

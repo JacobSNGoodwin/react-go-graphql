@@ -5,6 +5,14 @@ import { hasRequiredRole } from "../util/util";
 
 const Navbar: React.FC = props => {
   const authContext = React.useContext(AuthContext);
+  const [navOpen, setNavOpen] = React.useState<boolean>(false);
+
+  const toggleNav = function(): void {
+    const newState = !navOpen;
+    setNavOpen(newState);
+  };
+
+  const activeClass = navOpen ? "is-active" : "";
 
   return (
     <nav className="navbar is-fixed-top">
@@ -15,13 +23,16 @@ const Navbar: React.FC = props => {
             alt="Home Link Logo"
           />
         </Link>
-        <button className="navbar-burger burger">
+        <button
+          onClick={toggleNav}
+          className={`navbar-burger burger ${activeClass}`}
+        >
           <span></span>
           <span></span>
           <span></span>
         </button>
       </div>
-      <div className="navbar-menu">
+      <div className={`navbar-menu ${activeClass}`}>
         {authContext.user && (
           <div className="navbar-start">
             {hasRequiredRole(authContext.user.roles, ["Admin"]) && (

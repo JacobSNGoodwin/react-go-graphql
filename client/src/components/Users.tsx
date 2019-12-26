@@ -32,14 +32,14 @@ const Users: React.FC = props => {
 
   if (loading)
     return (
-      <div className="content">
+      <div className="container">
         <Spinner radius={50} />;
       </div>
     );
 
   if (error) {
     return (
-      <div className="content">
+      <div className="container">
         <h1>Error</h1>
         <p>{error.message}</p>
       </div>
@@ -49,10 +49,16 @@ const Users: React.FC = props => {
   const userList =
     data &&
     data.users.map(user => (
-      <div className="card" key={user.id}>
-        <div className="card-content">
-          <div className="media">
-            <div className="media-left">
+      <div className="container is-fullhd" key={user.id}>
+        <div className="card">
+          <div className="card-content has-text-centered">
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                padding: "1.5em 1em"
+              }}
+            >
               <figure className="image is-96x96">
                 {!user.imageUri || user.imageUri === "" ? (
                   <img
@@ -69,18 +75,26 @@ const Users: React.FC = props => {
                 )}
               </figure>
             </div>
-            <div className="media-content">
-              <p className="title is-4">{user.name}</p>
-              <p className="subtitle is-6">{user.email}</p>
-              <br />
-              <div className="title is-5">Roles</div>
-              <div>{user.roles.join(", ")}</div>
+
+            <p className="title is-4">{user.name}</p>
+            <p className="subtitle is-6">{user.email}</p>
+            <br />
+            <div className="is-size-5 has-text-weight-bold">Roles</div>
+            <div>{user.roles.join(", ")}</div>
+
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                paddingTop: "1.25em"
+              }}
+            >
+              <button style={{ border: "none" }} className="button is-primary">
+                Edit
+              </button>
             </div>
           </div>
         </div>
-        <footer className="card-footer">
-          <div className="button card-footer-item">Edit</div>
-        </footer>
       </div>
     ));
 
