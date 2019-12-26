@@ -25,12 +25,15 @@ const Login: React.FC<RouteComponentProps> = props => {
   ) => {
     if ((res as GoogleLoginResponse).getAuthResponse) {
       const token = (res as GoogleLoginResponse).getAuthResponse().id_token;
-
+      console.log("Google token");
+      console.log(token);
       authContext.loginWithGoogle(token);
     }
   };
 
   const responseFacebook = (res: ReactFacebookLoginInfo) => {
+    console.log("Facebook token");
+    console.log(res.accessToken);
     authContext.loginWithFacebook(res.accessToken);
   };
 
@@ -43,7 +46,7 @@ const Login: React.FC<RouteComponentProps> = props => {
 
   return (
     <>
-      <div className="section">
+      <div className="content is-centered has-text-centered">
         <div className="buttons is-centered">
           <GoogleLogin
             clientId={googleClientid}
@@ -81,10 +84,14 @@ const Login: React.FC<RouteComponentProps> = props => {
             {authContext.user ? authContext.user.id : "no user"}
           </p>
           <h3>User Roles</h3>
-          <ul>
-            {authContext.user &&
-              authContext.user.roles.map(role => <li key={role}>{role}</li>)}
-          </ul>
+
+          {authContext.user &&
+            authContext.user.roles.map(role => (
+              <p style={{ listStyleType: "none" }} key={role}>
+                {role}
+              </p>
+            ))}
+
           <h3>Errors</h3>
           <ul>
             {authContext.errors &&

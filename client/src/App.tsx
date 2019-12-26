@@ -23,7 +23,7 @@ const App: React.FC = () => {
     <ApolloProvider client={client}>
       <AuthProvider>
         <Navbar />
-        <div className="container has-text-centered">
+        <div className="section">
           <Router>
             <Login path="login" />
             <PrivateRoute as={Users} allowedRoles={["Admin"]} path="users" />
