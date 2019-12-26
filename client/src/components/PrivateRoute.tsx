@@ -19,7 +19,7 @@ const PrivateRoute: React.FC<IPrivateRouteProps &
 
   let { as: Comp } = props;
 
-  if (user && hasRequiredRole(user.roles, props.allowedRoles)) {
+  if (user && !hasRequiredRole(user.roles, props.allowedRoles)) {
     navigate("/login");
   }
 
