@@ -1,7 +1,8 @@
 import React from "react";
 
-import { Redirect, RouteComponentProps } from "@reach/router";
+import { RouteComponentProps } from "@reach/router";
 import { AuthContext } from "../components/contexts/AuthContext";
+import Error from "./Error";
 
 import { hasRequiredRole } from "../util/util";
 
@@ -15,13 +16,26 @@ const PrivateRoute: React.FC<IPrivateRouteProps &
   const { user } = React.useContext(AuthContext);
 
   if (!user) {
-    return <Redirect from="users" to="login" noThrow />;
+    return (
+      <Error
+        messages={[
+          "User needs to be logged in with proper permissions to access this resource"
+        ]}
+        includeLogin
+      />
+    );
   }
 
   let { as: Comp } = props;
 
   if (user && !hasRequiredRole(user.roles, props.allowedRoles)) {
-    return <Redirect from="users" to="login" noThrow />;
+    return (
+      <Error
+        messages={["User not permitted to view this resource"]}
+        includeLogin
+        includeHomeButton
+      />
+    );
   }
 
   return <Comp {...props} />;

@@ -5,6 +5,7 @@ import ApolloClient from "apollo-boost";
 
 import { AuthProvider } from "./components/contexts/AuthContext";
 import Navbar from "./components/Navbar";
+import Home from "./components/Home";
 import Login from "./components/Login";
 import Users from "./components/Users";
 import PrivateRoute from "./components/PrivateRoute";
@@ -25,6 +26,7 @@ const App: React.FC = () => {
         <Navbar />
         <div className="section">
           <Router>
+            <Home path="/" />
             <Login path="login" />
             <PrivateRoute as={Users} allowedRoles={["Admin"]} path="users" />
           </Router>
