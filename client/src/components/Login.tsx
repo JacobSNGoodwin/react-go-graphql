@@ -47,6 +47,8 @@ const Login: React.FC<RouteComponentProps> = props => {
   return (
     <>
       <div className="content is-centered has-text-centered">
+        <h1 className="title is-4">Login</h1>
+        <h4 className="subtitle is-6">Please choose a social login</h4>
         <div className="buttons is-centered">
           <GoogleLogin
             clientId={googleClientid}
@@ -76,31 +78,6 @@ const Login: React.FC<RouteComponentProps> = props => {
 
         <div className="columns is-centered">
           {authContext.loading && <Spinner radius={40} />}
-        </div>
-
-        <div className="content">
-          <p>
-            User authenticated? -{" "}
-            {authContext.user ? authContext.user.id : "no user"}
-          </p>
-          <h3>User Roles</h3>
-
-          {authContext.user &&
-            authContext.user.roles.map(role => (
-              <p style={{ listStyleType: "none" }} key={role}>
-                {role}
-              </p>
-            ))}
-
-          <h3>Errors</h3>
-          <ul>
-            {authContext.errors &&
-              authContext.errors.map((error, i) => (
-                <li key={i}>
-                  {error.type}, {error.message}
-                </li>
-              ))}
-          </ul>
         </div>
       </div>
     </>

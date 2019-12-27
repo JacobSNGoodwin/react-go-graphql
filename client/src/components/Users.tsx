@@ -32,16 +32,18 @@ const Users: React.FC = props => {
 
   if (loading)
     return (
-      <div className="container">
+      <div className="container has-text-centered">
         <Spinner radius={50} />;
       </div>
     );
 
   if (error) {
     return (
-      <div className="container">
-        <h1>Error</h1>
-        <p>{error.message}</p>
+      <div className="container has-text-centered">
+        <h1 className="title is-4">Error</h1>
+        {error.graphQLErrors.map((error, i) => {
+          return <p key={i}>{error.message}</p>;
+        })}
       </div>
     );
   }
@@ -49,7 +51,7 @@ const Users: React.FC = props => {
   const userList =
     data &&
     data.users.map(user => (
-      <div className="container is-fullhd" key={user.id}>
+      <div className="container" key={user.id}>
         <div className="card">
           <div className="card-content has-text-centered">
             <div

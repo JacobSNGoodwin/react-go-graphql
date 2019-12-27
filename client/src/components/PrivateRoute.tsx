@@ -1,7 +1,8 @@
 import React from "react";
 
-import { navigate, RouteComponentProps } from "@reach/router";
+import { Redirect, RouteComponentProps } from "@reach/router";
 import { AuthContext } from "../components/contexts/AuthContext";
+
 import { hasRequiredRole } from "../util/util";
 
 interface IPrivateRouteProps {
@@ -14,13 +15,13 @@ const PrivateRoute: React.FC<IPrivateRouteProps &
   const { user } = React.useContext(AuthContext);
 
   if (!user) {
-    navigate("/login");
+    return <Redirect from="users" to="login" noThrow />;
   }
 
   let { as: Comp } = props;
 
   if (user && !hasRequiredRole(user.roles, props.allowedRoles)) {
-    navigate("/login");
+    return <Redirect from="users" to="login" noThrow />;
   }
 
   return <Comp {...props} />;
