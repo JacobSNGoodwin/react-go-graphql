@@ -3,7 +3,7 @@ import { useQuery } from "@apollo/react-hooks";
 
 import Spinner from "./ui/Spinner";
 import { GET_USERS } from "../gql/queries";
-import placeholder from "../images/placeholder.png";
+import User from "./User";
 
 // Maybe store this in common types later
 interface IUser {
@@ -48,57 +48,7 @@ const Users: React.FC = props => {
     );
   }
 
-  const userList =
-    data &&
-    data.users.map(user => (
-      <div className="container" key={user.id}>
-        <div className="card">
-          <div className="card-content has-text-centered">
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                padding: "1.5em 1em"
-              }}
-            >
-              <figure className="image is-96x96">
-                {!user.imageUri || user.imageUri === "" ? (
-                  <img
-                    className="is-rounded"
-                    src={placeholder}
-                    alt="No profile"
-                  />
-                ) : (
-                  <img
-                    className="is-rounded"
-                    src={user.imageUri}
-                    alt="User profile"
-                  />
-                )}
-              </figure>
-            </div>
-
-            <p className="title is-4">{user.name}</p>
-            <p className="subtitle is-6">{user.email}</p>
-            <br />
-            <div className="is-size-5 has-text-weight-bold">Roles</div>
-            <div>{user.roles.join(", ")}</div>
-
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                paddingTop: "1.25em"
-              }}
-            >
-              <button style={{ border: "none" }} className="button is-primary">
-                Edit
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    ));
+  const userList = data && data.users.map(user => <User user={user} />);
 
   return (
     <div className="section">
