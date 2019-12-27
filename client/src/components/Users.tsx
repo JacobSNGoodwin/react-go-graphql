@@ -5,15 +5,6 @@ import Spinner from "./ui/Spinner";
 import { GET_USERS } from "../gql/queries";
 import User from "./User";
 
-// Maybe store this in common types later
-interface IUser {
-  id: string;
-  name?: string;
-  email: string;
-  imageUri?: string;
-  roles: string[];
-}
-
 interface IUserData {
   users: IUser[];
 }

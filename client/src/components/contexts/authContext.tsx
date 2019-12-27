@@ -18,14 +18,6 @@ interface IError {
   type: string | undefined;
 }
 
-interface IUser {
-  id: string;
-  name?: string;
-  email: string;
-  imageUri?: string;
-  roles: string[];
-}
-
 // maybe add error if login/logout aren't defined in Auth provided
 const defaultAuth: IAuthContext = {
   user: undefined,

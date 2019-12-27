@@ -2,15 +2,6 @@ import React from "react";
 
 import placeholder from "../images/placeholder.png";
 
-// Consider a global types file to prevent duplication
-interface IUser {
-  id: string;
-  name?: string;
-  email: string;
-  imageUri?: string;
-  roles: string[];
-}
-
 interface UserProps {
   user: IUser;
 }
