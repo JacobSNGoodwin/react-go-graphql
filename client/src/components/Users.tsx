@@ -39,12 +39,20 @@ const Users: React.FC = props => {
     );
   }
 
-  const userList = data && data.users.map(user => <User user={user} />);
+  const userList =
+    data &&
+    data.users.map(user => (
+      <div className="column is-half">
+        <User key={user.id} user={user} />
+      </div>
+    ));
 
   return (
     <div className="section">
       <h1 className="title is-1 has-text-centered">Users</h1>
-      {userList}
+      <div className="container">
+        <div className="columns is-vcentered is-multiline">{userList}</div>
+      </div>
     </div>
   );
 };
