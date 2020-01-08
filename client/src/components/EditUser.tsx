@@ -1,6 +1,8 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 
+import { emailPattern, imageUrlPattern } from "../util/util";
+
 interface EditUserProps {
   show: boolean;
   close: () => void;
@@ -8,12 +10,15 @@ interface EditUserProps {
 }
 
 const EditUser: React.FC<EditUserProps> = props => {
-  const { register, handleSubmit } = useForm<IUser>();
+  const { register, handleSubmit, errors } = useForm<IUser>({
+    mode: "onBlur",
+    defaultValues: props.initUser
+  });
 
   const editMode = props.initUser ? true : false;
   const title = editMode ? "Edit User" : "Create User";
 
-  const onSubmit = (data: any) => {
+  const onSubmit = (data: IUser) => {
     console.log(data);
 
     props.close();
@@ -36,12 +41,69 @@ const EditUser: React.FC<EditUserProps> = props => {
             <label className="label">Name</label>
             <div className="control">
               <input
-                className="input"
+                className={`input ${errors.name ? "is-danger" : "is-primary"}`}
                 name="name"
                 type="text"
                 placeholder="Name"
-                ref={register}
+                ref={register({ required: true })}
               />
+              {errors.name ? (
+                <p className="help is-danger">Name required</p>
+              ) : null}
+            </div>
+          </div>
+          <div className="field">
+            <label className="label">Email</label>
+            <div className="control">
+              <input
+                className={`input ${errors.email ? "is-danger" : "is-primary"}`}
+                name="email"
+                type="email"
+                placeholder="Email"
+                ref={register({ required: true, pattern: emailPattern })}
+              />
+              {errors.email ? (
+                <p className="help is-danger">
+                  A valid email address is required
+                </p>
+              ) : null}
+            </div>
+          </div>
+          <div className="field">
+            <label className="label">Image URL</label>
+            <div className="control">
+              <input
+                className={`input ${errors.email ? "is-danger" : "is-primary"}`}
+                name="imageUri"
+                type="url"
+                placeholder="Image URL"
+                ref={register({ pattern: imageUrlPattern })}
+              />
+              {errors.imageUri ? (
+                <p className="help is-danger">
+                  Not a valid image URL. Image must be of type png, jpg, or
+                  jpeg.
+                </p>
+              ) : null}
+            </div>
+          </div>
+          <div className="field">
+            <label className="label">Roles</label>
+            <div className="control">
+              <div className="columns is-centered">
+                <div className="column has-text-centered">
+                  <label className="checkbox">
+                    <input type="checkbox" name="roles[0]" ref={register} />
+                    Admin
+                  </label>
+                </div>
+                <div className="column has-text-centered">
+                  <label className="checkbox">
+                    <input type="checkbox" name="roles[1]" ref={register} />
+                    Editor
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
         </section>

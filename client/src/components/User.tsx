@@ -36,7 +36,9 @@ const User: React.FC<UserProps> = props => {
         <p className="subtitle is-6">{props.user.email}</p>
         <br />
         <div className="is-size-5 has-text-weight-bold">Roles</div>
-        <div>{props.user.roles.join(", ")}</div>
+        <div>
+          {props.user.roles.length === 0 ? "None" : props.user.roles.join(", ")}
+        </div>
 
         <div
           style={{

@@ -44,8 +44,8 @@ const Users: React.FC = props => {
   const userList =
     data &&
     data.users.map(user => (
-      <div className="column is-half">
-        <User key={user.id} user={user} />
+      <div key={user.id} className="column is-half">
+        <User user={user} />
       </div>
     ));
 
