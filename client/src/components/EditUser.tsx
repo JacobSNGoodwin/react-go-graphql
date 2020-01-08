@@ -93,13 +93,13 @@ const EditUser: React.FC<EditUserProps> = props => {
               <div className="columns is-centered">
                 <div className="column has-text-centered">
                   <label className="checkbox">
-                    <input type="checkbox" name="roles[0]" ref={register} />
+                    <input type="checkbox" name="roles.admin" ref={register} />
                     Admin
                   </label>
                 </div>
                 <div className="column has-text-centered">
                   <label className="checkbox">
-                    <input type="checkbox" name="roles[1]" ref={register} />
+                    <input type="checkbox" name="roles.editor" ref={register} />
                     Editor
                   </label>
                 </div>
