@@ -5,6 +5,7 @@ import Cookies from "js-cookie";
 
 import { LOGIN_GOOGLE, LOGIN_FACEBOOK } from "../../gql/mutations";
 import { ME } from "../../gql/queries";
+import { transformUserFromGQL } from "../../util/util";
 
 interface IAuthContext {
   user: IUser | undefined;
@@ -37,12 +38,12 @@ const AuthProvider: React.FC = props => {
   const [errors, setErrors] = useState<IError[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [loginGoogleMutation] = useMutation<
-    { googleLoginWithToken: IUser },
+    { googleLoginWithToken: IUserGQL },
     { idToken: string }
   >(LOGIN_GOOGLE, {
     errorPolicy: "ignore",
     onCompleted: ({ googleLoginWithToken }) => {
-      setUser(googleLoginWithToken);
+      setUser(transformUserFromGQL(googleLoginWithToken));
       setLoading(false);
       navigate("/");
     },
@@ -60,12 +61,12 @@ const AuthProvider: React.FC = props => {
   });
 
   const [loginFacebookMutation] = useMutation<
-    { fbLoginWithToken: IUser },
+    { fbLoginWithToken: IUserGQL },
     { accessToken: string }
   >(LOGIN_FACEBOOK, {
     errorPolicy: "ignore",
     onCompleted: ({ fbLoginWithToken }) => {
-      setUser(fbLoginWithToken);
+      setUser(transformUserFromGQL(fbLoginWithToken));
       setLoading(false);
       navigate("/");
     },
@@ -84,10 +85,10 @@ const AuthProvider: React.FC = props => {
 
   // lazy query to fetch me only on initial load
   // in the future we could do this more frequently
-  const [getMe] = useLazyQuery<{ me: IUser }>(ME, {
+  const [getMe] = useLazyQuery<{ me: IUserGQL }>(ME, {
     errorPolicy: "none",
     onCompleted: ({ me }) => {
-      setUser(me);
+      setUser(transformUserFromGQL(me));
       setLoading(false);
     },
     onError: error => {

@@ -9,6 +9,17 @@ interface UserProps {
 
 const User: React.FC<UserProps> = props => {
   const [editActive, setEditActive] = React.useState<boolean>(false);
+
+  const userRoles: string[] = [];
+
+  if (props.user.roles.admin) {
+    userRoles.push("Admin");
+  }
+
+  if (props.user.roles.editor) {
+    userRoles.push("Editor");
+  }
+
   return (
     <div className="card" key={props.user.id}>
       <div className="card-content has-text-centered">
@@ -36,9 +47,7 @@ const User: React.FC<UserProps> = props => {
         <p className="subtitle is-6">{props.user.email}</p>
         <br />
         <div className="is-size-5 has-text-weight-bold">Roles</div>
-        <div>
-          {props.user.roles.length === 0 ? "None" : props.user.roles.join(", ")}
-        </div>
+        <div>{userRoles.length > 0 ? userRoles.join(", ") : "None"}</div>
 
         <div
           style={{

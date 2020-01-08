@@ -1,7 +1,6 @@
 import React from "react";
 import { Link } from "@reach/router";
 import { AuthContext } from "./contexts/AuthContext";
-import { hasRequiredRole } from "../util/util";
 
 const Navbar: React.FC = props => {
   const authContext = React.useContext(AuthContext);
@@ -35,7 +34,7 @@ const Navbar: React.FC = props => {
       <div className={`navbar-menu ${activeClass}`}>
         {authContext.user && (
           <div className="navbar-start">
-            {hasRequiredRole(authContext.user.roles, ["Admin"]) && (
+            {authContext.user.roles.admin && (
               <Link to="/users" className="navbar-item">
                 Users
               </Link>

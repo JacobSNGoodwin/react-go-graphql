@@ -4,9 +4,10 @@ import { useQuery } from "@apollo/react-hooks";
 import Spinner from "./ui/Spinner";
 import { GET_USERS } from "../gql/queries";
 import User from "./User";
+import { transformUserFromGQL } from "../util/util";
 
 interface IUserData {
-  users: IUser[];
+  users: IUserGQL[];
 }
 
 interface IUserVars {
@@ -43,11 +44,14 @@ const Users: React.FC = props => {
 
   const userList =
     data &&
-    data.users.map(user => (
-      <div key={user.id} className="column is-half">
-        <User user={user} />
-      </div>
-    ));
+    data.users.map(userGQL => {
+      const user = transformUserFromGQL(userGQL);
+      return (
+        <div key={user.id} className="column is-half">
+          <User user={user} />
+        </div>
+      );
+    });
 
   return (
     <div className="section">

@@ -4,11 +4,10 @@ import { RouteComponentProps } from "@reach/router";
 import { AuthContext } from "../components/contexts/AuthContext";
 import Error from "./Error";
 
-import { hasRequiredRole } from "../util/util";
-
 interface IPrivateRouteProps {
   as: React.FC;
-  allowedRoles: string[];
+  admin?: boolean;
+  editor?: boolean;
 }
 
 const PrivateRoute: React.FC<IPrivateRouteProps &
@@ -28,7 +27,17 @@ const PrivateRoute: React.FC<IPrivateRouteProps &
 
   let { as: Comp } = props;
 
-  if (user && !hasRequiredRole(user.roles, props.allowedRoles)) {
+  let allowed: boolean = false;
+
+  if (props.admin && user.roles.admin) {
+    allowed = true;
+  }
+
+  if (props.editor && user.roles.editor) {
+    allowed = true;
+  }
+
+  if (user && !allowed) {
     return (
       <Error
         messages={["User not permitted to view this resource"]}

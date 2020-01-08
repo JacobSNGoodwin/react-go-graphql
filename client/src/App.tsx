@@ -28,7 +28,7 @@ const App: React.FC = () => {
           <Router>
             <Home path="/" />
             <Login path="login" />
-            <PrivateRoute as={Users} allowedRoles={["Admin"]} path="users" />
+            <PrivateRoute as={Users} admin path="users" />
           </Router>
         </div>
       </AuthProvider>
