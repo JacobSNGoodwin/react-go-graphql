@@ -1,7 +1,13 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 
-import { emailPattern, imageUrlPattern } from "../util/util";
+import {
+  emailPattern,
+  imageUrlPattern,
+  transformUserToGQL
+} from "../util/util";
+import { EDIT_USER } from "../gql/mutations";
+import { useMutation } from "@apollo/react-hooks";
 
 interface EditUserProps {
   show: boolean;
@@ -15,11 +21,24 @@ const EditUser: React.FC<EditUserProps> = props => {
     defaultValues: props.initUser
   });
 
+  const [editUser, { data, loading, error }] = useMutation<
+    { updatedUser: IUserGQL },
+    { user: IUserGQL }
+  >(EDIT_USER);
+
   const editMode = props.initUser ? true : false;
   const title = editMode ? "Edit User" : "Create User";
 
-  const onSubmit = (data: IUser) => {
-    console.log(data);
+  const onSubmit = (user: IUser) => {
+    if (editMode && props.initUser) {
+      user.id = props.initUser.id;
+      const userGQL = transformUserToGQL(user);
+      editUser({
+        variables: {
+          user: userGQL
+        }
+      });
+    }
 
     props.close();
   };

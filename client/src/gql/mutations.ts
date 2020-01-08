@@ -24,4 +24,23 @@ const LOGIN_FACEBOOK = gql`
   }
 `;
 
-export { LOGIN_GOOGLE, LOGIN_FACEBOOK };
+const EDIT_USER = gql`
+mutation editUser($user: EditUserInput!) {
+ 	editUser(user: $user) {
+    id
+    name
+    email
+    imageUri
+    roles
+  }
+}
+`;
+
+const DELETE_USER = gql`
+  mutation deleteUser($id: String!) {
+  deleteUser(id: $id)
+}
+`;
+
+
+export { LOGIN_GOOGLE, LOGIN_FACEBOOK, EDIT_USER, DELETE_USER };
