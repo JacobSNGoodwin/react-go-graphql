@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useMutation, useLazyQuery } from "@apollo/react-hooks";
+import { navigate } from "@reach/router";
 import Cookies from "js-cookie";
 
 import { LOGIN_GOOGLE, LOGIN_FACEBOOK } from "../../gql/mutations";
@@ -43,6 +44,7 @@ const AuthProvider: React.FC = props => {
     onCompleted: ({ googleLoginWithToken }) => {
       setUser(googleLoginWithToken);
       setLoading(false);
+      navigate("/");
     },
     onError: error => {
       const errors = error.graphQLErrors.map(error => {
@@ -65,6 +67,7 @@ const AuthProvider: React.FC = props => {
     onCompleted: ({ fbLoginWithToken }) => {
       setUser(fbLoginWithToken);
       setLoading(false);
+      navigate("/");
     },
     onError: error => {
       const errors = error.graphQLErrors.map(error => {
@@ -136,6 +139,7 @@ const AuthProvider: React.FC = props => {
   const logout = () => {
     Cookies.remove("userinfo");
     setUser(undefined);
+    navigate("/");
   };
 
   return (

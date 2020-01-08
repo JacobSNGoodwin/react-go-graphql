@@ -23,8 +23,10 @@ const Users: React.FC = props => {
 
   if (loading)
     return (
-      <div className="container has-text-centered">
-        <Spinner radius={50} />;
+      <div className="container">
+        <div className="columns is-centered">
+          <Spinner radius={50} />
+        </div>
       </div>
     );
 
