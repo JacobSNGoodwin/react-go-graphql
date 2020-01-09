@@ -24,15 +24,17 @@ const App: React.FC = () => {
   return (
     <ApolloProvider client={client}>
       <AuthProvider>
-        <Navbar />
-        <div className="section">
-          <Router>
-            <Home path="/" />
-            <Login path="login" />
-            <PrivateRoute as={Users} admin path="users" />
-            <Error path="error" />
-          </Router>
-        </div>
+        <>
+          <Navbar />
+          <div className="section">
+            <Router>
+              <Home path="/" />
+              <Login path="login" />
+              <PrivateRoute as={Users} admin path="users" />
+              <Error path="error" />
+            </Router>
+          </div>
+        </>
       </AuthProvider>
     </ApolloProvider>
   );

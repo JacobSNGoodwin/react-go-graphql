@@ -5,6 +5,7 @@ import Cookies from "js-cookie";
 
 import { LOGIN_GOOGLE, LOGIN_FACEBOOK } from "../../gql/mutations";
 import { ME } from "../../gql/queries";
+import Spinner from "../ui/Spinner";
 import { transformUserFromGQL } from "../../util/util";
 
 interface IAuthContext {
@@ -32,7 +33,7 @@ const AuthProvider: React.FC = props => {
   // useState for these properties
   const [user, setUser] = useState<IUser | undefined>(undefined);
   const [errors, setErrors] = useState<IError[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [loginGoogleMutation] = useMutation<
     { googleLoginWithToken: IUserGQL },
     { idToken: string }
@@ -104,7 +105,7 @@ const AuthProvider: React.FC = props => {
   // attempt to load user from me
   useEffect(() => {
     setLoading(true);
-    if (Cookies.get("userinfo")) {
+    if (Cookies.get("userinfo") && !user) {
       // only attempt to get user if a cookie is present
       getMe();
     } else {
@@ -134,10 +135,23 @@ const AuthProvider: React.FC = props => {
   };
 
   const logout = () => {
+    setLoading(true);
+    navigate("/login");
     Cookies.remove("userinfo");
     setUser(undefined);
-    navigate("/login");
   };
+
+  if (loading) {
+    return (
+      <div className="section">
+        <div className="container">
+          <div className="columns is-centered">
+            <Spinner />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <AuthContext.Provider
