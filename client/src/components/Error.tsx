@@ -4,7 +4,6 @@ import { Link, RouteComponentProps } from "@reach/router";
 import Login from "./Login";
 
 const Error: React.FC<RouteComponentProps> = props => {
-  console.log(props);
   const state: ErrorProps = props.location
     ? props.location.state
     : {

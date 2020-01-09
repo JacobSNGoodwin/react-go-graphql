@@ -110,7 +110,7 @@ const AuthProvider: React.FC = props => {
     } else {
       setLoading(false);
     }
-  }, [getMe]);
+  }, [getMe, user]);
 
   // Add login functions (for setting state here)
   const loginWithGoogle = (token: string) => {
@@ -136,7 +136,7 @@ const AuthProvider: React.FC = props => {
   const logout = () => {
     Cookies.remove("userinfo");
     setUser(undefined);
-    navigate("/");
+    navigate("/login");
   };
 
   return (
