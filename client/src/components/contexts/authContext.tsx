@@ -20,7 +20,7 @@ interface IAuthContext {
 // maybe add error if login/logout aren't defined in Auth provided
 const defaultAuth: IAuthContext = {
   user: undefined,
-  loading: false,
+  loading: true,
   errors: [],
   loginWithGoogle: () => {}, // produce error if not overwritten in Provider?
   loginWithFacebook: () => {},
@@ -31,9 +31,9 @@ const AuthContext = React.createContext<IAuthContext>(defaultAuth);
 
 const AuthProvider: React.FC = props => {
   // useState for these properties
-  const [user, setUser] = useState<IUser | undefined>(undefined);
-  const [errors, setErrors] = useState<IError[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [user, setUser] = useState<IUser | undefined>(defaultAuth.user);
+  const [errors, setErrors] = useState<IError[]>(defaultAuth.errors);
+  const [loading, setLoading] = useState<boolean>(defaultAuth.loading);
   const [loginGoogleMutation] = useMutation<
     { googleLoginWithToken: IUserGQL },
     { idToken: string }
@@ -104,9 +104,9 @@ const AuthProvider: React.FC = props => {
   // get useriD from cookie on initial load
   // attempt to load user from me
   useEffect(() => {
-    setLoading(true);
     if (Cookies.get("userinfo") && !user) {
       // only attempt to get user if a cookie is present
+      setLoading(true);
       getMe();
     } else {
       setLoading(false);
