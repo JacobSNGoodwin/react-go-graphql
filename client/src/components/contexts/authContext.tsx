@@ -15,10 +15,6 @@ interface IAuthContext {
   loginWithFacebook(token: string): void;
   logout(): void;
 }
-interface IError {
-  message: string;
-  type: string | undefined;
-}
 
 // maybe add error if login/logout aren't defined in Auth provided
 const defaultAuth: IAuthContext = {

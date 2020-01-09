@@ -1,28 +1,25 @@
 import React from "react";
 
-import { RouteComponentProps } from "@reach/router";
+import { RouteComponentProps, Redirect } from "@reach/router";
 import { AuthContext } from "../components/contexts/AuthContext";
-import Error from "./Error";
 
-interface IPrivateRouteProps {
+interface IPrivateRouteProps extends RouteComponentProps {
   as: React.FC;
   admin?: boolean;
   editor?: boolean;
 }
 
-const PrivateRoute: React.FC<IPrivateRouteProps &
-  RouteComponentProps> = props => {
+const PrivateRoute: React.FC<IPrivateRouteProps> = props => {
   const { user } = React.useContext(AuthContext);
+  console.log("Entering private route with user: ", user);
 
   if (!user) {
-    return (
-      <Error
-        messages={[
-          "User needs to be logged in with proper permissions to access this resource"
-        ]}
-        includeLogin
-      />
-    );
+    const errorProps: ErrorProps = {
+      messages: ["You are not logged in"],
+      includeLogin: true
+    };
+
+    return <Redirect to="error" state={errorProps} noThrow />;
   }
 
   let { as: Comp } = props;
@@ -38,13 +35,12 @@ const PrivateRoute: React.FC<IPrivateRouteProps &
   }
 
   if (user && !allowed) {
-    return (
-      <Error
-        messages={["User not permitted to view this resource"]}
-        includeLogin
-        includeHomeButton
-      />
-    );
+    console.log("Not authorized");
+    const errorProps: ErrorProps = {
+      messages: ["You are not allowed to access this resrouce"],
+      includeLogin: true
+    };
+    return <Redirect to="error" state={errorProps} noThrow />;
   }
 
   return <Comp {...props} />;

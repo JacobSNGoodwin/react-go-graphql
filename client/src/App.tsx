@@ -8,6 +8,7 @@ import Navbar from "./components/Navbar";
 import Home from "./components/Home";
 import Login from "./components/Login";
 import Users from "./components/Users";
+import Error from "./components/Error";
 import PrivateRoute from "./components/PrivateRoute";
 import "./App.scss";
 
@@ -29,6 +30,7 @@ const App: React.FC = () => {
             <Home path="/" />
             <Login path="login" />
             <PrivateRoute as={Users} admin path="users" />
+            <Error path="error" />
           </Router>
         </div>
       </AuthProvider>

@@ -16,15 +16,28 @@ interface EditUserProps {
 }
 
 const EditUser: React.FC<EditUserProps> = props => {
-  const { register, handleSubmit, errors } = useForm<IUser>({
-    mode: "onBlur",
+  const { register, handleSubmit, errors: formErrors } = useForm<IUser>({
     defaultValues: props.initUser
   });
 
-  const [editUser, { data, loading, error }] = useMutation<
-    { updatedUser: IUserGQL },
-    { user: IUserGQL }
-  >(EDIT_USER);
+  const [editUser] = useMutation<{ updatedUser: IUserGQL }, { user: IUserGQL }>(
+    EDIT_USER,
+    {
+      onCompleted: () => {
+        props.close();
+      },
+      onError: error => {
+        const errors = error.graphQLErrors.map(error => {
+          const type = error.extensions ? error.extensions.type : undefined;
+          return {
+            message: error.message,
+            type: type
+          };
+        });
+        console.log(errors);
+      }
+    }
+  );
 
   const editMode = props.initUser ? true : false;
   const title = editMode ? "Edit User" : "Create User";
@@ -39,8 +52,6 @@ const EditUser: React.FC<EditUserProps> = props => {
         }
       });
     }
-
-    props.close();
   };
 
   return (
@@ -60,13 +71,15 @@ const EditUser: React.FC<EditUserProps> = props => {
             <label className="label">Name</label>
             <div className="control">
               <input
-                className={`input ${errors.name ? "is-danger" : "is-primary"}`}
+                className={`input ${
+                  formErrors.name ? "is-danger" : "is-primary"
+                }`}
                 name="name"
                 type="text"
                 placeholder="Name"
                 ref={register({ required: true })}
               />
-              {errors.name ? (
+              {formErrors.name ? (
                 <p className="help is-danger">Name required</p>
               ) : null}
             </div>
@@ -75,13 +88,15 @@ const EditUser: React.FC<EditUserProps> = props => {
             <label className="label">Email</label>
             <div className="control">
               <input
-                className={`input ${errors.email ? "is-danger" : "is-primary"}`}
+                className={`input ${
+                  formErrors.email ? "is-danger" : "is-primary"
+                }`}
                 name="email"
                 type="email"
                 placeholder="Email"
                 ref={register({ required: true, pattern: emailPattern })}
               />
-              {errors.email ? (
+              {formErrors.email ? (
                 <p className="help is-danger">
                   A valid email address is required
                 </p>
@@ -92,17 +107,16 @@ const EditUser: React.FC<EditUserProps> = props => {
             <label className="label">Image URL</label>
             <div className="control">
               <input
-                className={`input ${errors.email ? "is-danger" : "is-primary"}`}
+                className={`input ${
+                  formErrors.email ? "is-danger" : "is-primary"
+                }`}
                 name="imageUri"
                 type="url"
                 placeholder="Image URL"
                 ref={register({ pattern: imageUrlPattern })}
               />
-              {errors.imageUri ? (
-                <p className="help is-danger">
-                  Not a valid image URL. Image must be of type png, jpg, or
-                  jpeg.
-                </p>
+              {formErrors.imageUri ? (
+                <p className="help is-danger">Not a valid URL</p>
               ) : null}
             </div>
           </div>

@@ -36,6 +36,18 @@ mutation editUser($user: EditUserInput!) {
 }
 `;
 
+const CREATE_USER = gql`
+mutation createUser($user: CreateUserInput!) {
+ 	createUser(user: $user) {
+    id
+    name
+    email
+    imageUri
+    roles
+  }
+}
+`;
+
 const DELETE_USER = gql`
   mutation deleteUser($id: String!) {
   deleteUser(id: $id)
@@ -43,4 +55,4 @@ const DELETE_USER = gql`
 `;
 
 
-export { LOGIN_GOOGLE, LOGIN_FACEBOOK, EDIT_USER, DELETE_USER };
+export { LOGIN_GOOGLE, LOGIN_FACEBOOK, EDIT_USER, DELETE_USER, CREATE_USER };
