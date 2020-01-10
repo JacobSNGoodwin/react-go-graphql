@@ -11,7 +11,6 @@ interface IPrivateRouteProps extends RouteComponentProps {
 
 const PrivateRoute: React.FC<IPrivateRouteProps> = props => {
   const { user } = React.useContext(AuthContext);
-  console.log("Entering private route with user: ", user);
 
   if (!user) {
     const errorProps: ErrorProps = {
@@ -35,7 +34,6 @@ const PrivateRoute: React.FC<IPrivateRouteProps> = props => {
   }
 
   if (user && !allowed) {
-    console.log("Not authorized");
     const errorProps: ErrorProps = {
       messages: ["You are not allowed to access this resrouce"],
       includeLogin: true

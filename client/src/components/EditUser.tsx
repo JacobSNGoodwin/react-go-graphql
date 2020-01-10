@@ -11,8 +11,8 @@ import { useMutation } from "@apollo/react-hooks";
 
 interface EditUserProps {
   show: boolean;
-  close: () => void;
   initUser?: IUser;
+  close: () => void;
 }
 
 const EditUser: React.FC<EditUserProps> = props => {

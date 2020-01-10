@@ -1,0 +1,13 @@
+.userButtons {
+  display: flex;
+  justify-content: center;
+  padding-top: 1em;
+  padding-bottom: 1em;
+  flex-wrap: wrap;
+
+  button {
+    margin-left: 0.5em;
+    margin-right: 0.5em;
+    width: 80px;
+  }
+}

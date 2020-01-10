@@ -14,6 +14,15 @@ interface IUser {
   roles: IRole;
 }
 
+interface IUserData {
+  users: IUserGQL[];
+}
+
+interface IUserVars {
+  limit?: number;
+  offset?: number;
+}
+
 interface IRole {
   admin: boolean;
   editor: boolean;

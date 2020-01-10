@@ -1,14 +1,20 @@
 import React from "react";
 
 import placeholder from "../images/placeholder.png";
+import DeleteUser from "./DeleteUser";
 import EditUser from "./EditUser";
+
+import styles from "./User.module.scss";
 
 interface UserProps {
   user: IUser;
+  deleteUser: () => void;
+  deletingUser: boolean;
 }
 
 const User: React.FC<UserProps> = props => {
   const [editActive, setEditActive] = React.useState<boolean>(false);
+  const [deleteActive, setDeleteActive] = React.useState<boolean>(false);
 
   const userRoles: string[] = [];
 
@@ -49,19 +55,18 @@ const User: React.FC<UserProps> = props => {
         <div className="is-size-5 has-text-weight-bold">Roles</div>
         <div>{userRoles.length > 0 ? userRoles.join(", ") : "None"}</div>
 
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            paddingTop: "1.25em"
-          }}
-        >
+        <div className={styles.userButtons}>
           <button
             onClick={() => setEditActive(true)}
-            style={{ border: "none" }}
             className="button is-primary"
           >
             Edit
+          </button>
+          <button
+            onClick={() => setDeleteActive(true)}
+            className="button is-danger"
+          >
+            Delete
           </button>
         </div>
 
@@ -69,6 +74,14 @@ const User: React.FC<UserProps> = props => {
           show={editActive}
           close={() => setEditActive(false)}
           initUser={props.user}
+        />
+
+        <DeleteUser
+          show={deleteActive}
+          deletingUser={props.deletingUser}
+          close={() => setDeleteActive(false)}
+          deleteSelectedUser={props.deleteUser}
+          user={props.user}
         />
       </div>
     </div>
