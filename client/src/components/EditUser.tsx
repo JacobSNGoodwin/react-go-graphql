@@ -1,43 +1,26 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 
+import Spinner from "./ui/Spinner";
+
 import {
   emailPattern,
   imageUrlPattern,
   transformUserToGQL
 } from "../util/util";
-import { EDIT_USER } from "../gql/mutations";
-import { useMutation } from "@apollo/react-hooks";
 
 interface EditUserProps {
   show: boolean;
   initUser?: IUser;
+  editingUser: boolean;
   close: () => void;
+  editSelectedUser: (gqlUser: IUserGQL) => void;
 }
 
 const EditUser: React.FC<EditUserProps> = props => {
   const { register, handleSubmit, errors: formErrors } = useForm<IUser>({
     defaultValues: props.initUser
   });
-
-  const [editUser] = useMutation<{ updatedUser: IUserGQL }, { user: IUserGQL }>(
-    EDIT_USER,
-    {
-      onCompleted: () => {
-        props.close();
-      },
-      onError: error => {
-        const errors = error.graphQLErrors.map(error => {
-          const type = error.extensions ? error.extensions.type : undefined;
-          return {
-            message: error.message,
-            type: type
-          };
-        });
-        console.log(errors);
-      }
-    }
-  );
 
   const editMode = props.initUser ? true : false;
   const title = editMode ? "Edit User" : "Create User";
@@ -46,11 +29,7 @@ const EditUser: React.FC<EditUserProps> = props => {
     if (editMode && props.initUser) {
       user.id = props.initUser.id;
       const userGQL = transformUserToGQL(user);
-      editUser({
-        variables: {
-          user: userGQL
-        }
-      });
+      props.editSelectedUser(userGQL);
     }
   };
 
@@ -141,12 +120,13 @@ const EditUser: React.FC<EditUserProps> = props => {
           </div>
         </section>
         <footer className="modal-card-foot">
-          <button onClick={handleSubmit(onSubmit)} className="button is-info">
+          <button onClick={handleSubmit(onSubmit)} className="button is-link">
             Save changes
           </button>
-          <button onClick={props.close} className="button is-danger">
+          <button onClick={props.close} className="button is-info">
             Cancel
           </button>
+          {props.editingUser ? <Spinner radius={20} /> : null}
         </footer>
       </div>
     </div>

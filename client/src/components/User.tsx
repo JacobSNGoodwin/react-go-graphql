@@ -1,21 +1,56 @@
 import React from "react";
+import { ExecutionResult, MutationFunctionOptions } from "@apollo/react-common";
 
 import placeholder from "../images/placeholder.png";
 import DeleteUser from "./DeleteUser";
 import EditUser from "./EditUser";
 
 import styles from "./User.module.scss";
+import { ApolloError } from "apollo-boost";
 
 interface UserProps {
   user: IUser;
-  deleteUser: () => void;
+  editingUser: boolean;
+  editUser: (
+    options?:
+      | MutationFunctionOptions<
+          {
+            editedUser: IUserGQL;
+          },
+          {
+            user: IUserGQL;
+          }
+        >
+      | undefined
+  ) => Promise<
+    ExecutionResult<{
+      editedUser: IUserGQL;
+    }>
+  >;
+  editError: ApolloError | undefined;
   deletingUser: boolean;
+  deleteUser: (
+    options?:
+      | MutationFunctionOptions<
+          {
+            deleteUser: string;
+          },
+          {
+            id: string;
+          }
+        >
+      | undefined
+  ) => Promise<
+    ExecutionResult<{
+      deleteUser: string;
+    }>
+  >;
+  deleteError: ApolloError | undefined;
 }
 
 const User: React.FC<UserProps> = props => {
   const [editActive, setEditActive] = React.useState<boolean>(false);
   const [deleteActive, setDeleteActive] = React.useState<boolean>(false);
-
   const userRoles: string[] = [];
 
   if (props.user.roles.admin) {
@@ -25,6 +60,34 @@ const User: React.FC<UserProps> = props => {
   if (props.user.roles.editor) {
     userRoles.push("Editor");
   }
+
+  const editMutation = (gqlUser: IUserGQL) => {
+    props
+      .editUser({
+        variables: {
+          user: gqlUser
+        }
+      })
+      .then(result => {
+        if (result.data) {
+          setEditActive(false);
+        }
+      });
+  };
+
+  const deleteMutation = () => {
+    props
+      .deleteUser({
+        variables: {
+          id: props.user.id
+        }
+      })
+      .then(result => {
+        if (result.data) {
+          setDeleteActive(false);
+        }
+      });
+  };
 
   return (
     <div className="card" key={props.user.id}>
@@ -64,7 +127,7 @@ const User: React.FC<UserProps> = props => {
           </button>
           <button
             onClick={() => setDeleteActive(true)}
-            className="button is-danger"
+            className="button is-link"
           >
             Delete
           </button>
@@ -72,15 +135,17 @@ const User: React.FC<UserProps> = props => {
 
         <EditUser
           show={editActive}
+          editSelectedUser={editMutation}
+          editingUser={props.editingUser}
           close={() => setEditActive(false)}
           initUser={props.user}
         />
 
         <DeleteUser
           show={deleteActive}
+          deleteSelectedUser={deleteMutation}
           deletingUser={props.deletingUser}
           close={() => setDeleteActive(false)}
-          deleteSelectedUser={props.deleteUser}
           user={props.user}
         />
       </div>

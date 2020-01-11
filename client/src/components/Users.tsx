@@ -3,11 +3,14 @@ import { useQuery, useMutation } from "@apollo/react-hooks";
 
 import User from "./User";
 import { GET_USERS } from "../gql/queries";
-import { DELETE_USER } from "../gql/mutations";
+import { EDIT_USER, DELETE_USER } from "../gql/mutations";
 import Spinner from "./ui/Spinner";
 import { transformUserFromGQL } from "../util/util";
 
 const Users: React.FC = props => {
+  /*
+   * Read (get) Users
+   */
   const { loading: loadingUsers, error: errorUsers, data } = useQuery<
     IUserData,
     IUserVars
@@ -17,23 +20,22 @@ const Users: React.FC = props => {
     }
   });
 
-  const [deleteUser, { loading: deletingUser }] = useMutation<
-    { deleteUser: string },
-    { id: string }
-  >(DELETE_USER, {
-    onCompleted: () => {
-      console.log("user deleted");
-    },
-    onError: error => {
-      const errors = error.graphQLErrors.map(error => {
-        const type = error.extensions ? error.extensions.type : undefined;
-        return {
-          message: error.message,
-          type: type
-        };
-      });
-      console.log(errors);
-    },
+  /*
+   * Update Users
+   */
+
+  const [editUser, { loading: editingUser, error: editError }] = useMutation<
+    { editedUser: IUserGQL },
+    { user: IUserGQL }
+  >(EDIT_USER);
+
+  /*
+   * Delete User
+   */
+  const [
+    deleteUser,
+    { loading: deletingUser, error: deleteError }
+  ] = useMutation<{ deleteUser: string }, { id: string }>(DELETE_USER, {
     refetchQueries: [
       {
         query: GET_USERS,
@@ -72,10 +74,12 @@ const Users: React.FC = props => {
         <div key={user.id} className="column is-half">
           <User
             user={user}
+            editingUser={editingUser}
+            editUser={editUser}
+            editError={editError}
             deletingUser={deletingUser}
-            deleteUser={() => {
-              deleteUser({ variables: { id: user.id } });
-            }}
+            deleteUser={deleteUser}
+            deleteError={deleteError}
           />
         </div>
       );

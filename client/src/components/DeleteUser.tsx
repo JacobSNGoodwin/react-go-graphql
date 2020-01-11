@@ -4,8 +4,8 @@ import Spinner from "./ui/Spinner";
 interface DeleteUserProps {
   show: boolean;
   user: IUser;
-  deletingUser: boolean;
   close: () => void;
+  deletingUser: boolean;
   deleteSelectedUser: () => void;
 }
 
@@ -28,10 +28,10 @@ const DeleteUser: React.FC<DeleteUserProps> = props => {
           <p>{props.user.email}</p>
         </section>
         <footer className="modal-card-foot">
-          <button onClick={props.deleteSelectedUser} className="button is-info">
+          <button onClick={props.deleteSelectedUser} className="button is-link">
             Delete
           </button>
-          <button onClick={props.close} className="button is-danger">
+          <button onClick={props.close} className="button is-info">
             Cancel
           </button>
           {props.deletingUser ? <Spinner radius={20} /> : null}
