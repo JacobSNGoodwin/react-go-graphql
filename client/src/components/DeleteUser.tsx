@@ -28,7 +28,10 @@ const DeleteUser: React.FC<DeleteUserProps> = props => {
           <p>{props.user.email}</p>
         </section>
         <footer className="modal-card-foot">
-          <button onClick={props.deleteSelectedUser} className="button is-link">
+          <button
+            onClick={props.deleteSelectedUser}
+            className="button is-danger"
+          >
             Delete
           </button>
           <button onClick={props.close} className="button is-info">

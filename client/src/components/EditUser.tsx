@@ -30,6 +30,9 @@ const EditUser: React.FC<EditUserProps> = props => {
       user.id = props.initUser.id;
       const userGQL = transformUserToGQL(user);
       props.editSelectedUser(userGQL);
+    } else {
+      const userGQL = transformUserToGQL(user);
+      props.editSelectedUser(userGQL);
     }
   };
 
@@ -120,7 +123,7 @@ const EditUser: React.FC<EditUserProps> = props => {
           </div>
         </section>
         <footer className="modal-card-foot">
-          <button onClick={handleSubmit(onSubmit)} className="button is-link">
+          <button onClick={handleSubmit(onSubmit)} className="button is-danger">
             Save changes
           </button>
           <button onClick={props.close} className="button is-info">

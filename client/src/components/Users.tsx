@@ -2,12 +2,31 @@ import React from "react";
 import { useQuery, useMutation } from "@apollo/react-hooks";
 
 import User from "./User";
+import EditUser from "./EditUser";
 import { GET_USERS } from "../gql/queries";
-import { EDIT_USER, DELETE_USER } from "../gql/mutations";
+import { CREATE_USER, EDIT_USER, DELETE_USER } from "../gql/mutations";
 import Spinner from "./ui/Spinner";
 import { transformUserFromGQL } from "../util/util";
 
 const Users: React.FC = props => {
+  const [createActive, setCreateActive] = React.useState<boolean>(false);
+  /*
+   * Create User
+   */
+  const [
+    createUser,
+    { loading: creatingUser, error: createError }
+  ] = useMutation<{ createdUser: IUserGQL }, { user: IUserGQL }>(CREATE_USER, {
+    refetchQueries: [
+      {
+        query: GET_USERS,
+        variables: {
+          limit: 10
+        }
+      }
+    ]
+  });
+
   /*
    * Read (get) Users
    */
@@ -89,8 +108,33 @@ const Users: React.FC = props => {
     <>
       <h1 className="title is-1 has-text-centered">Users</h1>
       <div className="container">
+        <div className="columns is-centered">
+          <button
+            className="button is-warning"
+            onClick={() => {
+              setCreateActive(true);
+            }}
+          >
+            Create
+          </button>
+        </div>
         <div className="columns is-vcentered is-multiline">{userList}</div>
       </div>
+
+      <EditUser
+        show={createActive}
+        editSelectedUser={gqlUser => {
+          createUser({
+            variables: {
+              user: gqlUser
+            }
+          }).then(() => {
+            setCreateActive(false);
+          });
+        }}
+        editingUser={creatingUser}
+        close={() => setCreateActive(false)}
+      />
     </>
   );
 };
