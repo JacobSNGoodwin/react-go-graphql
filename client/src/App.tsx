@@ -1,49 +1,42 @@
 import React from "react";
+import { Router } from "@reach/router";
+import { ApolloProvider } from "@apollo/react-hooks";
+import ApolloClient from "apollo-boost";
+
+import { AuthProvider } from "./components/contexts/AuthContext";
+import Navbar from "./components/Navbar";
+import Home from "./components/Home";
+import Login from "./components/Login";
+import Users from "./components/Users";
+import Error from "./components/Error";
+import PrivateRoute from "./components/PrivateRoute";
 import "./App.scss";
-import {
-  GoogleLogin,
-  GoogleLoginResponse,
-  GoogleLoginResponseOffline
-} from "react-google-login";
-import FacebookLogin, { ReactFacebookLoginInfo } from "react-facebook-login";
+
+const client = new ApolloClient({
+  uri: process.env.REACT_APP_URI_GQL,
+  credentials: "include",
+  headers: {
+    "X-Requested-With": "XMLHttpRequest"
+  }
+});
 
 const App: React.FC = () => {
-  const responseGoogle = (
-    res: GoogleLoginResponse | GoogleLoginResponseOffline
-  ) => {
-    if ((res as GoogleLoginResponse).getAuthResponse) {
-      console.log((res as GoogleLoginResponse).getAuthResponse().id_token);
-    }
-  };
-
-  const responseFacebook = (res: ReactFacebookLoginInfo) => {
-    console.log(res);
-  };
-
-  const googleClientid: string = process.env.REACT_APP_GOOGLE_CLIENT_ID
-    ? process.env.REACT_APP_GOOGLE_CLIENT_ID
-    : "";
-  const fbClientid: string = process.env.REACT_APP_FACEBOOK_CLIENT_ID
-    ? process.env.REACT_APP_FACEBOOK_CLIENT_ID
-    : "";
-
   return (
-    <div className="App">
-      <GoogleLogin
-        clientId={googleClientid}
-        buttonText="Login"
-        onSuccess={responseGoogle}
-        onFailure={responseGoogle}
-        cookiePolicy={"single_host_origin"}
-      />
-      <FacebookLogin
-        appId={fbClientid}
-        textButton="Login"
-        fields="name,email,picture"
-        callback={responseFacebook}
-        icon="fa-facebook"
-      />
-    </div>
+    <ApolloProvider client={client}>
+      <AuthProvider>
+        <>
+          <Navbar />
+          <div className="section">
+            <Router>
+              <Home path="/" />
+              <Login path="login" />
+              <PrivateRoute as={Users} admin path="users" />
+              <Error path="error" />
+            </Router>
+          </div>
+        </>
+      </AuthProvider>
+    </ApolloProvider>
   );
 };
 
