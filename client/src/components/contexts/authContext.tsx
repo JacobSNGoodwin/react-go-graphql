@@ -32,6 +32,9 @@ const AuthContext = React.createContext<IAuthContext>(defaultAuth);
 const AuthProvider: React.FC = props => {
   // useState for these properties
   const [user, setUser] = useState<IUser | undefined>(defaultAuth.user);
+  const [userCookie, setUserCookie] = useState<string | undefined>(
+    Cookies.get("userinfo")
+  );
   const [errors, setErrors] = useState<IError[]>(defaultAuth.errors);
   const [loading, setLoading] = useState<boolean>(defaultAuth.loading);
   const [loginGoogleMutation] = useMutation<
@@ -40,6 +43,7 @@ const AuthProvider: React.FC = props => {
   >(LOGIN_GOOGLE, {
     errorPolicy: "ignore",
     onCompleted: ({ googleLoginWithToken }) => {
+      setUserCookie(Cookies.get("userinfo"));
       setUser(transformUserFromGQL(googleLoginWithToken));
       setLoading(false);
       navigate("/");
@@ -63,6 +67,7 @@ const AuthProvider: React.FC = props => {
   >(LOGIN_FACEBOOK, {
     errorPolicy: "ignore",
     onCompleted: ({ fbLoginWithToken }) => {
+      setUserCookie(Cookies.get("userinfo"));
       setUser(transformUserFromGQL(fbLoginWithToken));
       setLoading(false);
       navigate("/");
@@ -85,6 +90,7 @@ const AuthProvider: React.FC = props => {
   const [getMe] = useLazyQuery<{ me: IUserGQL }>(ME, {
     errorPolicy: "none",
     onCompleted: ({ me }) => {
+      setUserCookie(Cookies.get("userinfo"));
       setUser(transformUserFromGQL(me));
       setLoading(false);
     },
@@ -104,14 +110,17 @@ const AuthProvider: React.FC = props => {
   // get useriD from cookie on initial load
   // attempt to load user from me
   useEffect(() => {
-    if (Cookies.get("userinfo") && !user) {
+    if (userCookie && !user) {
       // only attempt to get user if a cookie is present
       setLoading(true);
       getMe();
+    } else if (!userCookie) {
+      setUser(undefined);
+      setLoading(false);
     } else {
       setLoading(false);
     }
-  }, [getMe, user]);
+  }, [getMe, user, userCookie]);
 
   // Add login functions (for setting state here)
   const loginWithGoogle = (token: string) => {
@@ -138,6 +147,7 @@ const AuthProvider: React.FC = props => {
     setLoading(true);
     navigate("/login");
     Cookies.remove("userinfo");
+    setUserCookie(undefined);
     setUser(undefined);
   };
 
