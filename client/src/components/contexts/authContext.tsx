@@ -32,20 +32,15 @@ const AuthContext = React.createContext<IAuthContext>(defaultAuth);
 const AuthProvider: React.FC = props => {
   // useState for these properties
   const [user, setUser] = useState<IUser | undefined>(defaultAuth.user);
-  const [userCookie, setUserCookie] = useState<string | undefined>(
-    Cookies.get("userinfo")
-  );
   const [errors, setErrors] = useState<IError[]>(defaultAuth.errors);
-  const [loading, setLoading] = useState<boolean>(defaultAuth.loading);
-  const [loginGoogleMutation] = useMutation<
+  // const [loading, setLoading] = useState<boolean>(defaultAuth.loading);
+  const [loginGoogleMutation, { loading: googleLoading }] = useMutation<
     { googleLoginWithToken: IUserGQL },
     { idToken: string }
   >(LOGIN_GOOGLE, {
     errorPolicy: "ignore",
     onCompleted: ({ googleLoginWithToken }) => {
-      setUserCookie(Cookies.get("userinfo"));
       setUser(transformUserFromGQL(googleLoginWithToken));
-      setLoading(false);
       navigate("/");
     },
     onError: error => {
@@ -57,19 +52,16 @@ const AuthProvider: React.FC = props => {
         };
       });
       setErrors(errors);
-      setLoading(false);
     }
   });
 
-  const [loginFacebookMutation] = useMutation<
+  const [loginFacebookMutation, { loading: facebookLoading }] = useMutation<
     { fbLoginWithToken: IUserGQL },
     { accessToken: string }
   >(LOGIN_FACEBOOK, {
     errorPolicy: "ignore",
     onCompleted: ({ fbLoginWithToken }) => {
-      setUserCookie(Cookies.get("userinfo"));
       setUser(transformUserFromGQL(fbLoginWithToken));
-      setLoading(false);
       navigate("/");
     },
     onError: error => {
@@ -81,18 +73,15 @@ const AuthProvider: React.FC = props => {
         };
       });
       setErrors(errors);
-      setLoading(false);
     }
   });
 
   // lazy query to fetch me only on initial load
   // in the future we could do this more frequently
-  const [getMe] = useLazyQuery<{ me: IUserGQL }>(ME, {
+  const [getMe, { loading: meLoading }] = useLazyQuery<{ me: IUserGQL }>(ME, {
     errorPolicy: "none",
     onCompleted: ({ me }) => {
-      setUserCookie(Cookies.get("userinfo"));
       setUser(transformUserFromGQL(me));
-      setLoading(false);
     },
     onError: error => {
       const errors = error.graphQLErrors.map(error => {
@@ -103,28 +92,25 @@ const AuthProvider: React.FC = props => {
         };
       });
       setErrors(errors);
-      setLoading(false);
     }
   });
 
   // get useriD from cookie on initial load
   // attempt to load user from me
   useEffect(() => {
+    const userCookie = Cookies.get("userinfo");
     if (userCookie && !user) {
-      // only attempt to get user if a cookie is present
-      setLoading(true);
       getMe();
-    } else if (!userCookie) {
-      setUser(undefined);
-      setLoading(false);
-    } else {
-      setLoading(false);
     }
-  }, [getMe, user, userCookie]);
+    if (!userCookie && user) {
+      // must be a cookie to proceed
+      setUser(undefined);
+    }
+  }, [getMe, user]);
 
   // Add login functions (for setting state here)
   const loginWithGoogle = (token: string) => {
-    setLoading(true);
+    // setLoading(true);
 
     loginGoogleMutation({
       variables: {
@@ -134,7 +120,7 @@ const AuthProvider: React.FC = props => {
   };
 
   const loginWithFacebook = (token: string) => {
-    setLoading(true);
+    // setLoading(true);
 
     loginFacebookMutation({
       variables: {
@@ -144,14 +130,13 @@ const AuthProvider: React.FC = props => {
   };
 
   const logout = () => {
-    setLoading(true);
-    navigate("/login");
+    // setLoading(true);
     Cookies.remove("userinfo");
-    setUserCookie(undefined);
     setUser(undefined);
+    navigate("/login");
   };
 
-  if (loading) {
+  if (googleLoading || facebookLoading || meLoading) {
     return (
       <div className="section">
         <div className="container">
@@ -167,7 +152,7 @@ const AuthProvider: React.FC = props => {
     <AuthContext.Provider
       value={{
         user,
-        loading,
+        loading: googleLoading || facebookLoading || meLoading,
         errors,
         loginWithGoogle,
         loginWithFacebook,
