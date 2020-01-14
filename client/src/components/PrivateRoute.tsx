@@ -1,7 +1,8 @@
 import React from "react";
+import Cookies from "js-cookie";
 
 import { RouteComponentProps, Redirect } from "@reach/router";
-import { AuthContext } from "../components/contexts/AuthContext";
+import { AuthContext } from "./contexts/AuthContext";
 
 interface IPrivateRouteProps extends RouteComponentProps {
   as: React.FC;
@@ -10,13 +11,16 @@ interface IPrivateRouteProps extends RouteComponentProps {
 }
 
 const PrivateRoute: React.FC<IPrivateRouteProps> = props => {
-  const { user } = React.useContext(AuthContext);
+  const { user, logout } = React.useContext(AuthContext);
+  const userCookie = Cookies.get("userinfo");
 
-  if (!user) {
+  if (!user || !userCookie) {
     const errorProps: ErrorProps = {
       messages: ["You are not logged in"],
       includeLogin: true
     };
+
+    logout();
 
     return <Redirect to="error" state={errorProps} noThrow />;
   }
