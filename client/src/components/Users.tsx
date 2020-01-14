@@ -133,6 +133,7 @@ const Users: React.FC = props => {
           });
         }}
         editingUser={creatingUser}
+        error={createError}
         close={() => setCreateActive(false)}
       />
     </>

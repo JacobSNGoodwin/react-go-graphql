@@ -139,6 +139,7 @@ const User: React.FC<UserProps> = props => {
           editingUser={props.editingUser}
           close={() => setEditActive(false)}
           initUser={props.user}
+          error={props.editError}
         />
 
         <DeleteUser
