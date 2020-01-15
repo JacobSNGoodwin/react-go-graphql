@@ -106,6 +106,14 @@ const Users: React.FC = props => {
     return <ErrorsList error={editError} />;
   }
 
+  if (createError) {
+    return <ErrorsList error={createError} />;
+  }
+
+  if (deleteError) {
+    return <ErrorsList error={deleteError} />;
+  }
+
   const userList =
     data &&
     data.users.map(userGQL => {
