@@ -95,10 +95,8 @@ const Users: React.FC = props => {
             user={user}
             editingUser={editingUser}
             editUser={editUser}
-            editError={editError}
             deletingUser={deletingUser}
             deleteUser={deleteUser}
-            deleteError={deleteError}
           />
         </div>
       );
@@ -133,7 +131,6 @@ const Users: React.FC = props => {
           });
         }}
         editingUser={creatingUser}
-        error={createError}
         close={() => setCreateActive(false)}
       />
     </>

@@ -8,7 +8,6 @@ import {
   imageUrlPattern,
   transformUserToGQL
 } from "../util/util";
-import { ApolloError } from "apollo-boost";
 
 interface EditUserProps {
   show: boolean;
@@ -16,7 +15,6 @@ interface EditUserProps {
   editingUser: boolean;
   close: () => void;
   editSelectedUser: (gqlUser: IUserGQL) => void;
-  error: ApolloError | undefined;
 }
 
 const EditUser: React.FC<EditUserProps> = props => {
@@ -38,16 +36,6 @@ const EditUser: React.FC<EditUserProps> = props => {
     }
   };
 
-  const errors = props.error
-    ? props.error.graphQLErrors.map((error, i) => {
-        return (
-          <p key={i} className="has-text-danger">
-            {error.message}
-          </p>
-        );
-      })
-    : undefined;
-
   return (
     <div
       className={"has-text-centered modal" + (props.show ? " is-active" : "")}
@@ -63,7 +51,6 @@ const EditUser: React.FC<EditUserProps> = props => {
           ></button>
         </header>
         <section className="modal-card-body">
-          {errors && <div>{errors}</div>}
           <div className="field">
             <label className="label">Name</label>
             <div className="control">

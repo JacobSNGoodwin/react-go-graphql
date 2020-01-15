@@ -6,7 +6,6 @@ import DeleteUser from "./DeleteUser";
 import EditUser from "./EditUser";
 
 import styles from "./User.module.scss";
-import { ApolloError } from "apollo-boost";
 
 interface UserProps {
   user: IUser;
@@ -27,7 +26,7 @@ interface UserProps {
       editedUser: IUserGQL;
     }>
   >;
-  editError: ApolloError | undefined;
+
   deletingUser: boolean;
   deleteUser: (
     options?:
@@ -45,7 +44,6 @@ interface UserProps {
       deleteUser: string;
     }>
   >;
-  deleteError: ApolloError | undefined;
 }
 
 const User: React.FC<UserProps> = props => {
@@ -139,7 +137,6 @@ const User: React.FC<UserProps> = props => {
           editingUser={props.editingUser}
           close={() => setEditActive(false)}
           initUser={props.user}
-          error={props.editError}
         />
 
         <DeleteUser
