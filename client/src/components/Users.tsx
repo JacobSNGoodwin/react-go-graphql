@@ -7,6 +7,7 @@ import { GET_USERS } from "../gql/queries";
 import { CREATE_USER, EDIT_USER, DELETE_USER } from "../gql/mutations";
 import Spinner from "./ui/Spinner";
 import { transformUserFromGQL } from "../util/util";
+import ErrorsList from "./ErrorsList";
 
 const Users: React.FC = props => {
   const [createActive, setCreateActive] = React.useState<boolean>(false);
@@ -30,7 +31,7 @@ const Users: React.FC = props => {
   /*
    * Read (get) Users
    */
-  const { loading: loadingUsers, error: errorUsers, data } = useQuery<
+  const { loading: loadingUsers, error: usersError, data } = useQuery<
     IUserData,
     IUserVars
   >(GET_USERS, {
@@ -46,7 +47,9 @@ const Users: React.FC = props => {
   const [editUser, { loading: editingUser, error: editError }] = useMutation<
     { editedUser: IUserGQL },
     { user: IUserGQL }
-  >(EDIT_USER);
+  >(EDIT_USER, {
+    errorPolicy: "ignore"
+  });
 
   /*
    * Delete User
@@ -74,15 +77,13 @@ const Users: React.FC = props => {
       </div>
     );
 
-  if (errorUsers) {
-    return (
-      <div className="container has-text-centered">
-        <h1 className="title is-4">Error</h1>
-        {errorUsers.graphQLErrors.map((error, i) => {
-          return <p key={i}>{error.message}</p>;
-        })}
-      </div>
-    );
+  // manage all errors in state and with useEffect
+  if (usersError) {
+    return <ErrorsList error={usersError} />;
+  }
+
+  if (editError) {
+    return <ErrorsList error={editError} />;
   }
 
   const userList =

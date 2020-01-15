@@ -66,10 +66,11 @@ const User: React.FC<UserProps> = props => {
           user: gqlUser
         }
       })
-      .then(result => {
-        if (result.data) {
-          setEditActive(false);
-        }
+      .then(_ => {
+        setEditActive(false);
+      })
+      .catch(_ => {
+        setEditActive(false);
       });
   };
 
@@ -80,10 +81,11 @@ const User: React.FC<UserProps> = props => {
           id: props.user.id
         }
       })
-      .then(result => {
-        if (result.data) {
-          setDeleteActive(false);
-        }
+      .then(_ => {
+        setDeleteActive(false);
+      })
+      .catch(_ => {
+        setDeleteActive(false);
       });
   };
 
