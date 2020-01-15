@@ -7,6 +7,7 @@ import { GET_USERS } from "../gql/queries";
 import { CREATE_USER, EDIT_USER, DELETE_USER } from "../gql/mutations";
 import Spinner from "./ui/Spinner";
 import { transformUserFromGQL } from "../util/util";
+import ErrorsList from "./ErrorsList";
 
 const Users: React.FC = props => {
   const [createActive, setCreateActive] = React.useState<boolean>(false);
@@ -14,7 +15,7 @@ const Users: React.FC = props => {
    * Create User
    */
   const [
-    createUser,
+    createUserMutation,
     { loading: creatingUser, error: createError }
   ] = useMutation<{ createdUser: IUserGQL }, { user: IUserGQL }>(CREATE_USER, {
     refetchQueries: [
@@ -30,7 +31,7 @@ const Users: React.FC = props => {
   /*
    * Read (get) Users
    */
-  const { loading: loadingUsers, error: errorUsers, data } = useQuery<
+  const { loading: loadingUsers, error: usersError, data } = useQuery<
     IUserData,
     IUserVars
   >(GET_USERS, {
@@ -43,16 +44,18 @@ const Users: React.FC = props => {
    * Update Users
    */
 
-  const [editUser, { loading: editingUser, error: editError }] = useMutation<
-    { editedUser: IUserGQL },
-    { user: IUserGQL }
-  >(EDIT_USER);
+  const [
+    editUserMutation,
+    { loading: editingUser, error: editError }
+  ] = useMutation<{ editedUser: IUserGQL }, { user: IUserGQL }>(EDIT_USER, {
+    errorPolicy: "ignore"
+  });
 
   /*
    * Delete User
    */
   const [
-    deleteUser,
+    deleteUserMutation,
     { loading: deletingUser, error: deleteError }
   ] = useMutation<{ deleteUser: string }, { id: string }>(DELETE_USER, {
     refetchQueries: [
@@ -65,6 +68,26 @@ const Users: React.FC = props => {
     ]
   });
 
+  // functions to wrap mutations to pass to edit/delete components
+  const editUser = (user: IUserGQL) => {
+    return editUserMutation({
+      variables: {
+        user
+      }
+    });
+  };
+
+  const deleteUser = (id: string) => {
+    return deleteUserMutation({
+      variables: {
+        id
+      }
+    });
+  };
+
+  /*
+   * Rendering
+   */
   if (loadingUsers)
     return (
       <div className="container">
@@ -74,15 +97,13 @@ const Users: React.FC = props => {
       </div>
     );
 
-  if (errorUsers) {
-    return (
-      <div className="container has-text-centered">
-        <h1 className="title is-4">Error</h1>
-        {errorUsers.graphQLErrors.map((error, i) => {
-          return <p key={i}>{error.message}</p>;
-        })}
-      </div>
-    );
+  // manage all errors in state and with useEffect
+  if (usersError) {
+    return <ErrorsList error={usersError} />;
+  }
+
+  if (editError) {
+    return <ErrorsList error={editError} />;
   }
 
   const userList =
@@ -95,10 +116,8 @@ const Users: React.FC = props => {
             user={user}
             editingUser={editingUser}
             editUser={editUser}
-            editError={editError}
             deletingUser={deletingUser}
             deleteUser={deleteUser}
-            deleteError={deleteError}
           />
         </div>
       );
@@ -124,7 +143,7 @@ const Users: React.FC = props => {
       <EditUser
         show={createActive}
         editSelectedUser={gqlUser => {
-          createUser({
+          createUserMutation({
             variables: {
               user: gqlUser
             }
@@ -133,7 +152,6 @@ const Users: React.FC = props => {
           });
         }}
         editingUser={creatingUser}
-        error={createError}
         close={() => setCreateActive(false)}
       />
     </>
