@@ -14,7 +14,7 @@ interface EditUserProps {
   initUser?: IUser;
   editingUser: boolean;
   close: () => void;
-  editSelectedUser: (gqlUser: IUserGQL) => void;
+  editSelectedUser: (userGQL: IUserGQL) => void;
 }
 
 const EditUser: React.FC<EditUserProps> = props => {

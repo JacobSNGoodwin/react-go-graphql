@@ -15,7 +15,7 @@ const Users: React.FC = props => {
    * Create User
    */
   const [
-    createUser,
+    createUserMutation,
     { loading: creatingUser, error: createError }
   ] = useMutation<{ createdUser: IUserGQL }, { user: IUserGQL }>(CREATE_USER, {
     refetchQueries: [
@@ -44,10 +44,10 @@ const Users: React.FC = props => {
    * Update Users
    */
 
-  const [editUser, { loading: editingUser, error: editError }] = useMutation<
-    { editedUser: IUserGQL },
-    { user: IUserGQL }
-  >(EDIT_USER, {
+  const [
+    editUserMutation,
+    { loading: editingUser, error: editError }
+  ] = useMutation<{ editedUser: IUserGQL }, { user: IUserGQL }>(EDIT_USER, {
     errorPolicy: "ignore"
   });
 
@@ -55,7 +55,7 @@ const Users: React.FC = props => {
    * Delete User
    */
   const [
-    deleteUser,
+    deleteUserMutation,
     { loading: deletingUser, error: deleteError }
   ] = useMutation<{ deleteUser: string }, { id: string }>(DELETE_USER, {
     refetchQueries: [
@@ -68,6 +68,26 @@ const Users: React.FC = props => {
     ]
   });
 
+  // functions to wrap mutations to pass to edit/delete components
+  const editUser = (user: IUserGQL) => {
+    return editUserMutation({
+      variables: {
+        user
+      }
+    });
+  };
+
+  const deleteUser = (id: string) => {
+    return deleteUserMutation({
+      variables: {
+        id
+      }
+    });
+  };
+
+  /*
+   * Rendering
+   */
   if (loadingUsers)
     return (
       <div className="container">
@@ -123,7 +143,7 @@ const Users: React.FC = props => {
       <EditUser
         show={createActive}
         editSelectedUser={gqlUser => {
-          createUser({
+          createUserMutation({
             variables: {
               user: gqlUser
             }

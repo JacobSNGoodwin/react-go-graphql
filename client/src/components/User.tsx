@@ -1,49 +1,18 @@
 import React from "react";
-import { ExecutionResult, MutationFunctionOptions } from "@apollo/react-common";
 
 import placeholder from "../images/placeholder.png";
 import DeleteUser from "./DeleteUser";
 import EditUser from "./EditUser";
 
 import styles from "./User.module.scss";
+import { ExecutionResult } from "graphql";
 
 interface UserProps {
   user: IUser;
   editingUser: boolean;
-  editUser: (
-    options?:
-      | MutationFunctionOptions<
-          {
-            editedUser: IUserGQL;
-          },
-          {
-            user: IUserGQL;
-          }
-        >
-      | undefined
-  ) => Promise<
-    ExecutionResult<{
-      editedUser: IUserGQL;
-    }>
-  >;
-
+  editUser: (user: IUserGQL) => Promise<ExecutionResult>;
   deletingUser: boolean;
-  deleteUser: (
-    options?:
-      | MutationFunctionOptions<
-          {
-            deleteUser: string;
-          },
-          {
-            id: string;
-          }
-        >
-      | undefined
-  ) => Promise<
-    ExecutionResult<{
-      deleteUser: string;
-    }>
-  >;
+  deleteUser: (id: string) => Promise<ExecutionResult>;
 }
 
 const User: React.FC<UserProps> = props => {
@@ -58,36 +27,6 @@ const User: React.FC<UserProps> = props => {
   if (props.user.roles.editor) {
     userRoles.push("Editor");
   }
-
-  const editMutation = (gqlUser: IUserGQL) => {
-    props
-      .editUser({
-        variables: {
-          user: gqlUser
-        }
-      })
-      .then(_ => {
-        setEditActive(false);
-      })
-      .catch(_ => {
-        setEditActive(false);
-      });
-  };
-
-  const deleteMutation = () => {
-    props
-      .deleteUser({
-        variables: {
-          id: props.user.id
-        }
-      })
-      .then(_ => {
-        setDeleteActive(false);
-      })
-      .catch(_ => {
-        setDeleteActive(false);
-      });
-  };
 
   return (
     <div className="card" key={props.user.id}>
@@ -135,7 +74,16 @@ const User: React.FC<UserProps> = props => {
 
         <EditUser
           show={editActive}
-          editSelectedUser={editMutation}
+          editSelectedUser={userGQL => {
+            props
+              .editUser(userGQL)
+              .then(_ => {
+                setEditActive(false);
+              })
+              .catch(_ => {
+                setEditActive(false);
+              });
+          }}
           editingUser={props.editingUser}
           close={() => setEditActive(false)}
           initUser={props.user}
@@ -143,9 +91,20 @@ const User: React.FC<UserProps> = props => {
 
         <DeleteUser
           show={deleteActive}
-          deleteSelectedUser={deleteMutation}
+          deleteSelectedUser={() => {
+            props
+              .deleteUser(props.user.id)
+              .then(_ => {
+                setDeleteActive(false);
+              })
+              .catch(_ => {
+                setDeleteActive(false);
+              });
+          }}
           deletingUser={props.deletingUser}
-          close={() => setDeleteActive(false)}
+          close={() => {
+            setDeleteActive(false);
+          }}
           user={props.user}
         />
       </div>
