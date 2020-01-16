@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useMutation, useLazyQuery } from "@apollo/react-hooks";
+import { useMutation, useQuery } from "@apollo/react-hooks";
 import { navigate } from "@reach/router";
 import Cookies from "js-cookie";
 
@@ -33,7 +33,7 @@ const AuthProvider: React.FC = props => {
   // useState for these properties
   const [user, setUser] = useState<IUser | undefined>(defaultAuth.user);
   const [errors, setErrors] = useState<IError[]>(defaultAuth.errors);
-  // const [loading, setLoading] = useState<boolean>(defaultAuth.loading);
+
   const [loginGoogleMutation, { loading: googleLoading }] = useMutation<
     { googleLoginWithToken: IUserGQL },
     { idToken: string }
@@ -78,40 +78,43 @@ const AuthProvider: React.FC = props => {
 
   // lazy query to fetch me only on initial load
   // in the future we could do this more frequently
-  const [getMe, { loading: meLoading }] = useLazyQuery<{ me: IUserGQL }>(ME, {
-    errorPolicy: "none",
-    onCompleted: ({ me }) => {
-      setUser(transformUserFromGQL(me));
-    },
-    onError: error => {
-      const errors = error.graphQLErrors.map(error => {
-        const type = error.extensions ? error.extensions.type : undefined;
-        return {
-          message: error.message,
-          type: type
-        };
-      });
-      setErrors(errors);
+  const { loading: meLoading, refetch: refetchMe } = useQuery<{ me: IUserGQL }>(
+    ME,
+    {
+      errorPolicy: "none",
+      onCompleted: ({ me }) => {
+        setUser(transformUserFromGQL(me));
+      },
+      onError: error => {
+        const errors = error.graphQLErrors.map(error => {
+          const type = error.extensions ? error.extensions.type : undefined;
+          return {
+            message: error.message,
+            type: type
+          };
+        });
+        setErrors(errors);
+      }
     }
-  });
+  );
 
-  // get useriD from cookie on initial load
-  // attempt to load user from me
   useEffect(() => {
+    async function getMe() {
+      const resp = await refetchMe();
+      if (resp.data) {
+        setUser(transformUserFromGQL(resp.data.me));
+      }
+    }
+
     const userCookie = Cookies.get("userinfo");
+
     if (userCookie && !user) {
       getMe();
     }
-    if (!userCookie && user) {
-      // must be a cookie to proceed
-      setUser(undefined);
-    }
-  }, [getMe, user]);
+  });
 
   // Add login functions (for setting state here)
   const loginWithGoogle = (token: string) => {
-    // setLoading(true);
-
     loginGoogleMutation({
       variables: {
         idToken: token
@@ -120,8 +123,6 @@ const AuthProvider: React.FC = props => {
   };
 
   const loginWithFacebook = (token: string) => {
-    // setLoading(true);
-
     loginFacebookMutation({
       variables: {
         accessToken: token
@@ -130,10 +131,10 @@ const AuthProvider: React.FC = props => {
   };
 
   const logout = () => {
-    // setLoading(true);
     Cookies.remove("userinfo");
-    setUser(undefined);
-    navigate("/login");
+    navigate("/login").then(_ => {
+      setUser(undefined);
+    });
   };
 
   if (googleLoading || facebookLoading || meLoading) {

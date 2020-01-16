@@ -11,7 +11,7 @@ const ErrorsList: React.FC<ErrorListProps> = props => {
   const authContext = React.useContext(AuthContext);
   const errorMessages: JSX.Element[] = [];
   let redirectProps: ErrorProps | undefined = undefined;
-  props.error.graphQLErrors.forEach(error => {
+  props.error.graphQLErrors.forEach((error, i) => {
     if (error.extensions && error.extensions.type === "FORBIDDEN") {
       redirectProps = {
         messages: ["You are not authenticated"],
@@ -19,7 +19,11 @@ const ErrorsList: React.FC<ErrorListProps> = props => {
       };
     }
 
-    errorMessages.push(<p className="has-text-danger">{error.message}</p>);
+    errorMessages.push(
+      <p key={i} className="has-text-danger">
+        {error.message}
+      </p>
+    );
   });
 
   if (redirectProps) {
