@@ -1,5 +1,10 @@
 package models
 
+import (
+	"github.com/graphql-go/graphql"
+	"github.com/maxbrain0/react-go-graphql/server/database"
+)
+
 // Product holds information about a product and its price
 type Product struct {
 	Base
@@ -9,4 +14,24 @@ type Product struct {
 	ImageURI    string      `json:"imageUri" gorm:"type:text"`
 	Location    string      `json:"location" grom:"type:varchar(6);not null"`
 	Categories  []*Category `json:"categories" gorm:"many2many:product_categories"`
+}
+
+// Products holds an array of Product
+type Products []Product
+
+// GetAll returns a list of all users
+func (pr *Products) GetAll(p graphql.ResolveParams) error {
+	db := database.Conn
+
+	if result :=
+		db.
+			Order("name").
+			Limit(p.Args["limit"].(int)).
+			Offset(p.Args["offset"].(int)).
+			Preload("Categories").
+			Find(&pr); result.Error != nil {
+		return result.Error
+	}
+
+	return nil
 }
