@@ -19,7 +19,7 @@ type Product struct {
 // Products holds an array of Product
 type Products []Product
 
-// GetAll returns a list of all users
+// GetAll returns a list of all products
 func (pr *Products) GetAll(p graphql.ResolveParams) error {
 	db := database.Conn
 

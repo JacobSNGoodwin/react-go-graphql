@@ -64,7 +64,7 @@ var RootQuery = graphql.NewObject(graphql.ObjectConfig{
 		},
 		"products": &graphql.Field{
 			Type:        graphql.NewList(productType),
-			Description: "A list of all products",
+			Description: "A list of products",
 			Args: graphql.FieldConfigArgument{
 				"limit": &graphql.ArgumentConfig{
 					Type:         graphql.Int,
@@ -81,6 +81,27 @@ var RootQuery = graphql.NewObject(graphql.ObjectConfig{
 					return nil, err
 				}
 				return products, nil
+			},
+		},
+		"categories": &graphql.Field{
+			Type:        graphql.NewList(categoryType),
+			Description: "A list of categories",
+			Args: graphql.FieldConfigArgument{
+				"limit": &graphql.ArgumentConfig{
+					Type:         graphql.Int,
+					DefaultValue: 5,
+				},
+				"offset": &graphql.ArgumentConfig{
+					Type:         graphql.Int,
+					DefaultValue: 0,
+				},
+			},
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				var categories models.Categories
+				if err := categories.GetAll(p); err != nil {
+					return nil, err
+				}
+				return categories, nil
 			},
 		},
 	},
