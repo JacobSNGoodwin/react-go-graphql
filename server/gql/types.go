@@ -121,3 +121,63 @@ var roleEnum = graphql.NewEnum(graphql.EnumConfig{
 		},
 	},
 })
+
+// productType holds information for a single product
+var productType = graphql.NewObject(graphql.ObjectConfig{
+	Name:        "Product",
+	Description: "A product with its accompanying properties",
+	Fields: graphql.Fields{
+		"id": &graphql.Field{
+			Type: graphql.NewNonNull(graphql.String),
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				// need to resolve uuid to string
+				if product, ok := p.Source.(models.Product); ok {
+					return product.ID.String(), nil
+				}
+				return nil, nil
+			},
+		},
+		"name": &graphql.Field{
+			Type: graphql.NewNonNull(graphql.String),
+		},
+		"description": &graphql.Field{
+			Type: graphql.NewNonNull(graphql.String),
+		},
+		"price": &graphql.Field{
+			Type:        graphql.NewNonNull(graphql.Int),
+			Description: "Holds the product price in cents as an integer",
+		},
+		"imageUri": &graphql.Field{
+			Type:        graphql.NewNonNull(graphql.String),
+			Description: "Holds the user's image Uri, if any",
+		},
+		"location": &graphql.Field{
+			Type:        graphql.NewNonNull(graphql.String),
+			Description: "The aisle and row of the product. Up to 6 characters are allowed",
+		},
+	},
+})
+
+// productType holds information for a single category
+var categoryType = graphql.NewObject(graphql.ObjectConfig{
+	Name:        "Category",
+	Description: "A product category title with its description",
+	Fields: graphql.Fields{
+		"id": &graphql.Field{
+			Type: graphql.NewNonNull(graphql.String),
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				// need to resolve uuid to string
+				if category, ok := p.Source.(models.Category); ok {
+					return category.ID.String(), nil
+				}
+				return nil, nil
+			},
+		},
+		"title": &graphql.Field{
+			Type: graphql.NewNonNull(graphql.String),
+		},
+		"description": &graphql.Field{
+			Type: graphql.NewNonNull(graphql.String),
+		},
+	},
+})
