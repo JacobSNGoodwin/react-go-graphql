@@ -13,6 +13,7 @@ func Init() {
 
 	db.AutoMigrate(&User{})
 	db.AutoMigrate(&Role{})
+	db.AutoMigrate(&Product{})
 
 	RoleMap = make(map[string]*Role)
 	// create map of roles (for more easily getting role ref to use with GORM in gql mutations/queries)
