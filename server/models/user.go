@@ -73,6 +73,8 @@ func (u *Users) GetAll(p graphql.ResolveParams) error {
 		return errors.NewForbidden("Not authorized", nil)
 	}
 
+	ctxLogger.Infoln("GetAll Users")
+
 	if result :=
 		db.
 			Order("email").
@@ -95,6 +97,7 @@ func (u *User) GetByID(p graphql.ResolveParams) error {
 		return errors.NewForbidden("Not authorized", nil)
 	}
 
+	ctxLogger.WithField("id", p.Args["id"].(string)).Infoln("GetByID Users")
 	// Find by uuid or email, which should both be unique
 	if err := db.
 		Preload("Roles").
@@ -112,6 +115,7 @@ func (u *User) GetByID(p graphql.ResolveParams) error {
 func (u *User) GetCurrent(p graphql.ResolveParams) error {
 	ctxUser := p.Context.Value(ContextKeyUser).(User)
 
+	ctxLogger.Infoln("GetCurrent User")
 	if uuid.Equal(ctxUser.ID, uuid.Nil) {
 		return errors.NewAuthentication("User is not logged in", nil)
 	}
@@ -133,7 +137,7 @@ func (u *User) Create(p graphql.ResolveParams, rs []Role) error {
 	ctxLogger.WithFields(logrus.Fields{
 		"Email": u.Email,
 		"Roles": rs,
-	}).Debugln("Creating user with roles")
+	}).Infoln("Creating user with roles")
 
 	if err := db.Create(&u).Model(&u).Association("Roles").Append(rs).Error; err != nil {
 		ctxLogger.WithError(err).Debugln("DB Error creating user")
@@ -152,6 +156,8 @@ func (u *User) Update(p graphql.ResolveParams, updates map[string]interface{}, u
 	if !hasRole(ctxUser.Roles, "admin") {
 		return errors.NewForbidden("Not authorized", nil)
 	}
+
+	ctxLogger.WithField("id", u.ID).Infoln("Update User: %v")
 
 	if err := db.First(&u).Error; err != nil {
 		ctxLogger.WithError(err).Debugln("DB Error updating user")
@@ -178,6 +184,8 @@ func (u *User) Delete(p graphql.ResolveParams) error {
 	if !hasRole(ctxUser.Roles, "admin") {
 		return errors.NewForbidden("Not authorized", nil)
 	}
+
+	ctxLogger.WithField("id", u.ID).Infoln("Delete User")
 
 	// create a transacation to make sure both roles are unassociated and user is deleted
 	tx := db.Begin()

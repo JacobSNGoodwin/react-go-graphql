@@ -23,6 +23,7 @@ type Products []Product
 func (pr *Products) GetAll(p graphql.ResolveParams) error {
 	db := database.Conn
 
+	ctxLogger.Infoln("GetAll Products")
 	if result :=
 		db.
 			Order("name").

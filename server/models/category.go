@@ -20,6 +20,7 @@ type Categories []Category
 func (c *Categories) GetAll(p graphql.ResolveParams) error {
 	db := database.Conn
 
+	ctxLogger.Infoln("GetAll Categories")
 	if result :=
 		db.
 			Order("title").
