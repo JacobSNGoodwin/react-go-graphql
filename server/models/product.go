@@ -13,7 +13,7 @@ type Product struct {
 	Price       int         `json:"price" gorm:"type:integer;not null"`
 	ImageURI    string      `json:"imageUri" gorm:"type:text"`
 	Location    string      `json:"location" grom:"type:varchar(6);not null"`
-	Categories  []*Category `json:"categories" gorm:"many2many:product_categories"`
+	Categories  []*Category `json:"categories" gorm:"many2many:product_categories;PRELOAD:false"`
 }
 
 // Products holds an array of Product
@@ -29,7 +29,6 @@ func (pr *Products) GetAll(p graphql.ResolveParams) error {
 			Order("name").
 			Limit(p.Args["limit"].(int)).
 			Offset(p.Args["offset"].(int)).
-			Preload("Categories").
 			Find(&pr); result.Error != nil {
 		return result.Error
 	}

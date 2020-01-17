@@ -2,6 +2,7 @@ package gql
 
 import (
 	"github.com/graphql-go/graphql"
+	"github.com/maxbrain0/react-go-graphql/server/database"
 	"github.com/maxbrain0/react-go-graphql/server/models"
 )
 
@@ -11,12 +12,11 @@ func init() {
 		Type:        graphql.NewList(categoryType),
 		Description: "Holds a list of categories pertaining to a product",
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-			// needed to handle categories as a pointer (used for GORM reasons)
+			// get associated categories for given product
+			db := database.Conn
 			var categories = models.Categories{}
 			if product, ok := p.Source.(models.Product); ok {
-				for _, category := range product.Categories {
-					categories = append(categories, *category)
-				}
+				db.Model(&product).Association("Categories").Find(&categories)
 				return categories, nil
 			}
 			return nil, nil
@@ -26,12 +26,11 @@ func init() {
 		Type:        graphql.NewList(productType),
 		Description: "Holds a list of products pertaining to a category",
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-			// needed to handle categories as a pointer (used for GORM reasons)
+			// get accosciated products for given category
+			db := database.Conn
 			var products = models.Products{}
 			if category, ok := p.Source.(models.Category); ok {
-				for _, product := range category.Products {
-					products = append(products, *product)
-				}
+				db.Model(&category).Association("Products").Find(&products)
 				return products, nil
 			}
 			return nil, nil
