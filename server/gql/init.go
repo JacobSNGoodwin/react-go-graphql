@@ -13,7 +13,8 @@ func init() {
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			// get associated categories for given product
 			if product, ok := p.Source.(models.Product); ok {
-				return newProductCategoriesLoader(p.Context).Load(product.ID)
+				return p.Context.Value(models.ContextKeyLoaders).(models.Loaders).
+					ProductCategoriesLoader.Load(product.ID)
 			}
 			return nil, nil
 		},
@@ -24,7 +25,8 @@ func init() {
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			// get accosciated products for given category
 			if category, ok := p.Source.(models.Category); ok {
-				return newCategoryProductsLoader(p.Context).Load(category.ID)
+				p.Context.Value(models.ContextKeyLoaders).(models.Loaders).
+					CategoryProductsLoader.Load(category.ID)
 			}
 			return nil, nil
 		},

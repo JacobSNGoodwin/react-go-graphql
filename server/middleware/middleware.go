@@ -40,10 +40,18 @@ func HTTPMiddleware(c *Config) http.Handler {
 		} else {
 			// Get cookies and reconstruct token - verify token and append authorization roles to
 			// the req context
+
+			// initialize loaders for this req context
+			ldrs := models.Loaders{
+				ProductCategoriesLoader: models.NewProductCategoriesLoader(),
+				CategoryProductsLoader:  models.NewCategoryProductsLoader(),
+			}
+
 			ctxUser := userFromCookies(&w, r, c.R)
 
 			ctx := context.WithValue(r.Context(), models.ContextKeyUser, ctxUser)
 			ctx = context.WithValue(ctx, models.ContextKeyWriter, &w)
+			ctx = context.WithValue(ctx, models.ContextKeyLoaders, ldrs)
 
 			w.Header().Set("Access-Control-Allow-Origin", os.Getenv("CLIENT_HOST"))
 			w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")

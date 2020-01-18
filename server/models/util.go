@@ -22,6 +22,9 @@ const ContextKeyUser = contextKey("User")
 // ContextKeyWriter used to access writer in http pipeline (for setting cookies outside of middleware)
 const ContextKeyWriter = contextKey("writer")
 
+// ContextKeyLoaders used as a type for struct of available dataloaders
+const ContextKeyLoaders = contextKey("loaders")
+
 var ctxLogger = logger.CtxLogger
 
 // utility functions for models
