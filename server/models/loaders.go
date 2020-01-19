@@ -1,9 +1,11 @@
 package models
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/maxbrain0/react-go-graphql/server/database"
+	"github.com/maxbrain0/react-go-graphql/server/errors"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -39,9 +41,9 @@ func NewProductCategoriesLoader() *CategoriesLoader {
 		maxBatch: 100,
 		fetch: func(ids []uuid.UUID) ([][]Category, []error) {
 			output := make([][]Category, len(ids))
-			// errors := make([]error, len(ids))
+			outputErrors := make([]error, len(ids))
 
-			rows, err := db.
+			rows, _ := db.
 				Raw("SELECT * FROM categories JOIN product_categories ON product_categories.category_id = id WHERE product_id IN (?)", ids).
 				Rows()
 
@@ -57,10 +59,17 @@ func NewProductCategoriesLoader() *CategoriesLoader {
 			}
 
 			for i, id := range ids {
-				output[i] = productCategories[id]
+				outputID, ok := productCategories[id]
+				if !ok {
+					output[i] = nil
+					outputErrors[i] = errors.NewInternal("Error getting category for product", fmt.Errorf("Unknown error loading category"))
+				} else {
+					output[i] = outputID
+					outputErrors[i] = nil
+				}
 			}
 
-			return output, []error{err}
+			return output, outputErrors
 		},
 	}
 }
@@ -73,9 +82,9 @@ func NewCategoryProductsLoader() *ProductsLoader {
 		maxBatch: 100,
 		fetch: func(ids []uuid.UUID) ([][]Product, []error) {
 			output := make([][]Product, len(ids))
-			// errors := make([]error, len(ids))
+			outputErrors := make([]error, len(ids))
 
-			rows, err := db.
+			rows, _ := db.
 				Raw("SELECT * FROM products JOIN product_categories ON product_categories.product_id = id WHERE category_id IN (?)", ids).
 				Rows()
 
@@ -91,10 +100,17 @@ func NewCategoryProductsLoader() *ProductsLoader {
 			}
 
 			for i, id := range ids {
-				output[i] = categoryProducts[id]
+				outputID, ok := categoryProducts[id]
+				if !ok {
+					output[i] = nil
+					outputErrors[i] = errors.NewInternal("Error getting product for category", fmt.Errorf("Unknown error loading product"))
+				} else {
+					output[i] = outputID
+					outputErrors[i] = nil
+				}
 			}
 
-			return output, []error{err}
+			return output, outputErrors
 		},
 	}
 }
