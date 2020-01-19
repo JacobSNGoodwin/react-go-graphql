@@ -3,6 +3,7 @@ package models
 import (
 	"time"
 
+	"github.com/maxbrain0/react-go-graphql/server/database"
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -32,7 +33,7 @@ type CategoryProducts []CategoryProduct
 
 // NewProductCategoriesLoader returns a Categories loader that access categories beloning to a product
 func NewProductCategoriesLoader() *CategoriesLoader {
-	// var db = database.Conn
+	var db = database.Conn
 	return &CategoriesLoader{
 		wait:     5 * time.Millisecond,
 		maxBatch: 100,
@@ -42,27 +43,23 @@ func NewProductCategoriesLoader() *CategoriesLoader {
 
 			ctxLogger.WithField("ids", ids).Debugln("ProductIDs")
 
-			// rows, err := db.
-			// 	Raw("SELECT * FROM categories JOIN product_categories ON product_categories.category_id = id WHERE product_id IN (?)", ids).
-			// 	Rows()
+			rows, _ := db.
+				Raw("SELECT * FROM categories JOIN product_categories ON product_categories.category_id = id WHERE product_id IN (?)", ids).
+				Rows()
 
-			// if err != nil {
-			// 	ctxLogger.Debugln("Failed to fetch data rows")
-			// }
+			productCategories := make(map[uuid.UUID][]Category, len(ids))
+			defer rows.Close()
+			for rows.Next() {
+				productCategory := ProductCategory{}
+				db.ScanRows(rows, &productCategory)
+				category := productCategory.Category
 
-			// productCategories := make(map[uuid.UUID][]Category, len(ids))
-			// defer rows.Close()
-			// for rows.Next() {
-			// 	productCategory := ProductCategory{}
-			// 	db.ScanRows(rows, &productCategory)
-			// 	ctxLogger.WithFields(logrus.Fields{
-			// 		"ProductID":     productCategory.ProductID,
-			// 		"CategoryID":    productCategory.ID,
-			// 		"CategoryTitle": productCategory.Title,
-			// 	}).Debugln("Scanning rows")
+				productCategories[productCategory.ProductID] = append(productCategories[productCategory.ProductID], category)
+			}
 
-			// 	productCategories[productCategory.ProductID] = append(productCategories[productCategory.ProductID])
-			// }
+			for i, id := range ids {
+				output[i] = productCategories[id]
+			}
 
 			return output, errors
 		},
