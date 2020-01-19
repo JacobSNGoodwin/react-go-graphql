@@ -39,14 +39,13 @@ func NewProductCategoriesLoader() *CategoriesLoader {
 		maxBatch: 100,
 		fetch: func(ids []uuid.UUID) ([][]Category, []error) {
 			output := make([][]Category, len(ids))
-			errors := make([]error, len(ids))
+			// errors := make([]error, len(ids))
 
-			ctxLogger.WithField("ids", ids).Debugln("ProductIDs")
-
-			rows, _ := db.
+			rows, err := db.
 				Raw("SELECT * FROM categories JOIN product_categories ON product_categories.category_id = id WHERE product_id IN (?)", ids).
 				Rows()
 
+			// also can add map of product ID to errors
 			productCategories := make(map[uuid.UUID][]Category, len(ids))
 			defer rows.Close()
 			for rows.Next() {
@@ -61,50 +60,41 @@ func NewProductCategoriesLoader() *CategoriesLoader {
 				output[i] = productCategories[id]
 			}
 
-			return output, errors
+			return output, []error{err}
 		},
 	}
 }
 
 // NewCategoryProductsLoader returns a Products loader that access products beloning to a category
 func NewCategoryProductsLoader() *ProductsLoader {
-	// var db = database.Conn
+	var db = database.Conn
 	return &ProductsLoader{
 		wait:     50 * time.Millisecond,
 		maxBatch: 100,
 		fetch: func(ids []uuid.UUID) ([][]Product, []error) {
-			products := make([][]Product, len(ids))
-			errors := make([]error, len(ids))
+			output := make([][]Product, len(ids))
+			// errors := make([]error, len(ids))
 
-			ctxLogger.WithField("ids", ids).Infoln("Category Products Fetch")
+			rows, err := db.
+				Raw("SELECT * FROM products JOIN product_categories ON product_categories.product_id = id WHERE category_id IN (?)", ids).
+				Rows()
 
-			// var data CategoryProducts
+			// also can add map of product ID to errors
+			categoryProducts := make(map[uuid.UUID][]Product, len(ids))
+			defer rows.Close()
+			for rows.Next() {
+				categoryProduct := CategoryProduct{}
+				db.ScanRows(rows, &categoryProduct)
+				product := categoryProduct.Product
 
-			// db.
-			// 	Raw("SELECT * FROM products JOIN product_categories ON product_categories.product_id = products.id WHERE category_id IN (?)", ids).
-			// 	Scan(&data)
-
-			// for _, product := range data {
-			// 	ctxLogger.WithFields(logrus.Fields{
-			// 		"CategoryID": product.CategoryID,
-			// 		"ProductID":  product.ID,
-			// 	}).Infoln("Product Row")
-			// }
-
-			for i, id := range ids {
-				products[i] = []Product{
-					Product{
-						Name:        id.String(),
-						Description: "Bla",
-					},
-					Product{
-						Name:        id.String(),
-						Description: "Blabla",
-					},
-				}
+				categoryProducts[categoryProduct.CategoryID] = append(categoryProducts[categoryProduct.CategoryID], product)
 			}
 
-			return products, errors
+			for i, id := range ids {
+				output[i] = categoryProducts[id]
+			}
+
+			return output, []error{err}
 		},
 	}
 }
