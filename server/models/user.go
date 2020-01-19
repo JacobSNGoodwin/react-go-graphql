@@ -82,7 +82,7 @@ func (u *Users) GetAll(p graphql.ResolveParams) error {
 			Offset(p.Args["offset"].(int)).
 			Preload("Roles").
 			Find(&u); result.Error != nil {
-		return result.Error
+		return errors.NewInternal("Error fetching users", nil)
 	}
 
 	return nil

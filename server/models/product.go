@@ -3,6 +3,8 @@ package models
 import (
 	"github.com/graphql-go/graphql"
 	"github.com/maxbrain0/react-go-graphql/server/database"
+	"github.com/maxbrain0/react-go-graphql/server/errors"
+	uuid "github.com/satori/go.uuid"
 )
 
 // Product holds information about a product and its price
@@ -30,7 +32,28 @@ func (pr *Products) GetAll(p graphql.ResolveParams) error {
 			Limit(p.Args["limit"].(int)).
 			Offset(p.Args["offset"].(int)).
 			Find(&pr); result.Error != nil {
-		return result.Error
+		return errors.NewInternal("Error fetching products", result.Error)
+	}
+
+	return nil
+}
+
+// GetByID gets product from database based on the its id
+func (pr *Product) GetByID(p graphql.ResolveParams) error {
+	db := database.Conn
+	ctxUser := p.Context.Value(ContextKeyUser).(User)
+
+	if !hasRole(ctxUser.Roles, "admin") && !hasRole(ctxUser.Roles, "editor") {
+		return errors.NewForbidden("Not authorized", nil)
+	}
+
+	ctxLogger.WithField("id", p.Args["id"].(string)).Infoln("GetByID Products")
+	// Find by uuid or email, which should both be unique
+	if err := db.
+		Where("id = ?", uuid.FromStringOrNil(p.Args["id"].(string))).
+		Find(&pr).Error; err != nil {
+		ctxLogger.WithError(err).Debugln("DB Error finding user by ID")
+		return errors.NewInternal("Error finding user", nil)
 	}
 
 	return nil

@@ -38,9 +38,8 @@ var RootQuery = graphql.NewObject(graphql.ObjectConfig{
 			Description: "Gets a single user by id",
 			Args: graphql.FieldConfigArgument{
 				"id": &graphql.ArgumentConfig{
-					Type:         graphql.String,
-					Description:  "A v4 uuid casted as a string",
-					DefaultValue: "",
+					Type:        graphql.NewNonNull(graphql.String),
+					Description: "A v4 uuid casted as a string",
 				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
@@ -102,6 +101,23 @@ var RootQuery = graphql.NewObject(graphql.ObjectConfig{
 					return nil, err
 				}
 				return categories, nil
+			},
+		},
+		"product": &graphql.Field{
+			Type:        productType,
+			Description: "Gets a single product by id",
+			Args: graphql.FieldConfigArgument{
+				"id": &graphql.ArgumentConfig{
+					Type:        graphql.NewNonNull(graphql.String),
+					Description: "A v4 uuid casted as a string",
+				},
+			},
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				var product models.Product
+				if err := product.GetByID(p); err != nil {
+					return nil, err
+				}
+				return product, nil
 			},
 		},
 	},
