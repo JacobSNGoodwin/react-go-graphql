@@ -29,6 +29,12 @@ func HTTPMiddleware(c *Config) http.Handler {
 		// Check for X-Requested-With header
 		h := r.Header.Get("X-Requested-With")
 
+		// initialize loaders for this req context
+		ldrs := models.Loaders{
+			ProductCategoriesLoader: models.NewProductCategoriesLoader(),
+			CategoryProductsLoader:  models.NewCategoryProductsLoader(),
+		}
+
 		if h != "XMLHttpRequest" && r.Host != fmt.Sprintf("localhost:%s", os.Getenv("SERVER_PORT")) {
 			ctxLogger.Warningf("Request from %v without necessary X-Requested-With header", r.Host)
 			e := gqlerrors.NewFormattedError("Bad Request. Must include X-Requested-With header")
@@ -40,12 +46,6 @@ func HTTPMiddleware(c *Config) http.Handler {
 		} else {
 			// Get cookies and reconstruct token - verify token and append authorization roles to
 			// the req context
-
-			// initialize loaders for this req context
-			ldrs := models.Loaders{
-				ProductCategoriesLoader: models.NewProductCategoriesLoader(),
-				CategoryProductsLoader:  models.NewCategoryProductsLoader(),
-			}
 
 			ctxUser := userFromCookies(&w, r, c.R)
 

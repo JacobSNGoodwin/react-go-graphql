@@ -34,24 +34,37 @@ type CategoryProducts []CategoryProduct
 func NewProductCategoriesLoader() *CategoriesLoader {
 	// var db = database.Conn
 	return &CategoriesLoader{
-		wait:     2 * time.Millisecond,
+		wait:     5 * time.Millisecond,
 		maxBatch: 100,
 		fetch: func(ids []uuid.UUID) ([][]Category, []error) {
-			categories := make([][]Category, len(ids))
+			output := make([][]Category, len(ids))
 			errors := make([]error, len(ids))
 
-			ctxLogger.WithField("ids", ids).Infoln("Product Categories Fetch")
+			ctxLogger.WithField("ids", ids).Debugln("ProductIDs")
 
-			// var data ProductCategories
-			// db.
+			// rows, err := db.
 			// 	Raw("SELECT * FROM categories JOIN product_categories ON product_categories.category_id = id WHERE product_id IN (?)", ids).
-			// 	Scan(&data)
+			// 	Rows()
 
-			// for _, row := range data {
-			// 	productID := row.ProductID
+			// if err != nil {
+			// 	ctxLogger.Debugln("Failed to fetch data rows")
 			// }
 
-			return categories, errors
+			// productCategories := make(map[uuid.UUID][]Category, len(ids))
+			// defer rows.Close()
+			// for rows.Next() {
+			// 	productCategory := ProductCategory{}
+			// 	db.ScanRows(rows, &productCategory)
+			// 	ctxLogger.WithFields(logrus.Fields{
+			// 		"ProductID":     productCategory.ProductID,
+			// 		"CategoryID":    productCategory.ID,
+			// 		"CategoryTitle": productCategory.Title,
+			// 	}).Debugln("Scanning rows")
+
+			// 	productCategories[productCategory.ProductID] = append(productCategories[productCategory.ProductID])
+			// }
+
+			return output, errors
 		},
 	}
 }
@@ -60,7 +73,7 @@ func NewProductCategoriesLoader() *CategoriesLoader {
 func NewCategoryProductsLoader() *ProductsLoader {
 	// var db = database.Conn
 	return &ProductsLoader{
-		wait:     2 * time.Millisecond,
+		wait:     50 * time.Millisecond,
 		maxBatch: 100,
 		fetch: func(ids []uuid.UUID) ([][]Product, []error) {
 			products := make([][]Product, len(ids))
@@ -80,6 +93,19 @@ func NewCategoryProductsLoader() *ProductsLoader {
 			// 		"ProductID":  product.ID,
 			// 	}).Infoln("Product Row")
 			// }
+
+			for i, id := range ids {
+				products[i] = []Product{
+					Product{
+						Name:        id.String(),
+						Description: "Bla",
+					},
+					Product{
+						Name:        id.String(),
+						Description: "Blabla",
+					},
+				}
+			}
 
 			return products, errors
 		},

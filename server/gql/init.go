@@ -5,7 +5,6 @@ import (
 	"github.com/maxbrain0/react-go-graphql/server/models"
 )
 
-// avoid declaration cycles
 func init() {
 	productType.AddFieldConfig("categories", &graphql.Field{
 		Type:        graphql.NewList(categoryType),
@@ -13,8 +12,11 @@ func init() {
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 			// get associated categories for given product
 			if product, ok := p.Source.(models.Product); ok {
-				return p.Context.Value(models.ContextKeyLoaders).(models.Loaders).
-					ProductCategoriesLoader.Load(product.ID)
+				thunk := p.Context.Value(models.ContextKeyLoaders).(models.Loaders).
+					ProductCategoriesLoader.LoadThunk(product.ID)
+				return func() (interface{}, error) {
+					return thunk()
+				}, nil
 			}
 			return nil, nil
 		},
@@ -23,10 +25,12 @@ func init() {
 		Type:        graphql.NewList(productType),
 		Description: "Holds a list of products pertaining to a category",
 		Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-			// get accosciated products for given category
 			if category, ok := p.Source.(models.Category); ok {
-				p.Context.Value(models.ContextKeyLoaders).(models.Loaders).
-					CategoryProductsLoader.Load(category.ID)
+				thunk := p.Context.Value(models.ContextKeyLoaders).(models.Loaders).
+					CategoryProductsLoader.LoadThunk(category.ID)
+				return func() (interface{}, error) {
+					return thunk()
+				}, nil
 			}
 			return nil, nil
 		},
