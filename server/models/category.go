@@ -73,3 +73,65 @@ func (c *Category) Create(p graphql.ResolveParams) error {
 
 	return nil
 }
+
+// Update attempts to update an existing user
+func (c *Category) Update(p graphql.ResolveParams, updates map[string]interface{}) error {
+	db := database.Conn
+
+	ctxUser := p.Context.Value(ContextKeyUser).(User)
+
+	if !hasRole(ctxUser.Roles, "admin") && !hasRole(ctxUser.Roles, "editor") {
+		return errors.NewForbidden("Not authorized", nil)
+	}
+
+	ctxLogger.WithFields(logrus.Fields{
+		"ID": c.ID,
+	}).Infoln("Updating category")
+
+	if err := db.Model(&c).Updates(updates).Error; err != nil {
+		ctxLogger.WithError(err).Debugln("DB Error updating category")
+		return errors.NewInternal("Error updating category", nil)
+	}
+
+	return nil
+}
+
+// Delete removes category with c.ID
+func (c *Category) Delete(p graphql.ResolveParams) error {
+	db := database.Conn
+	ctxUser := p.Context.Value(ContextKeyUser).(User)
+
+	if !hasRole(ctxUser.Roles, "admin") && !hasRole(ctxUser.Roles, "editor") {
+		return errors.NewForbidden("Not authorized", nil)
+	}
+
+	ctxLogger.WithFields(logrus.Fields{
+		"ID": c.ID,
+	}).Infoln("Deleting category")
+
+	// create a transacation to make sure category association to products is removed
+	tx := db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if err := tx.Model(&c).Association("Products").Clear().Error; err != nil {
+		ctxLogger.WithError(err).Debugln("DB Error deleting category")
+		tx.Rollback()
+		errors.NewInternal("Error deleting category", nil)
+	}
+
+	if err := tx.Delete(&c).Error; err != nil {
+		ctxLogger.WithError(err).Debugln("DB Error deleting category")
+		tx.Rollback()
+		return errors.NewInternal("Error deleting category", nil)
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		return errors.NewInternal("Error deleting category", nil)
+	}
+
+	return nil
+}

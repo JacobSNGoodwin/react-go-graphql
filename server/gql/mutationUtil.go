@@ -273,5 +273,46 @@ func createCategory(p graphql.ResolveParams) (interface{}, error) {
 	}
 
 	return c, nil
+}
 
+func editCategory(p graphql.ResolveParams) (interface{}, error) {
+	c := models.Category{}
+	category := p.Args["category"].(map[string]interface{})
+	id, err := uuid.FromString(category["id"].(string))
+	if err != nil {
+		return nil, errors.NewInternal("Not a valid UUID", err)
+	}
+	c.ID = id
+
+	// we'll build a map as then we can ignore fields the user does not want to update
+	m := make(map[string]interface{})
+	if title, ok := category["title"].(string); ok {
+		m["title"] = title
+	}
+
+	if description, ok := category["description"].(string); ok {
+		m["description"] = description
+	}
+
+	err = c.Update(p, m)
+
+	if err != nil {
+		ctxLogger.WithFields(logrus.Fields{
+			"Title": c.Title,
+		}).Warn("Unable to edit category")
+		return nil, err
+	}
+
+	return c, nil
+}
+
+func deleteCategory(p graphql.ResolveParams) (interface{}, error) {
+	c := models.Category{}
+	id := p.Args["id"].(string)
+	c.ID = uuid.FromStringOrNil(id)
+	if err := c.Delete(p); err != nil {
+		return nil, err
+	}
+
+	return id, nil
 }

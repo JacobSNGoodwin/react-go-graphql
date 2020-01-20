@@ -41,7 +41,7 @@ var RootMutation = graphql.NewObject(graphql.ObjectConfig{
 		},
 		"editUser": &graphql.Field{
 			Type:        userType,
-			Description: "Allows admins to create users",
+			Description: "Allows admins to edit a user",
 			Args: graphql.FieldConfigArgument{
 				"user": &graphql.ArgumentConfig{
 					Type:        userEditType,
@@ -52,11 +52,10 @@ var RootMutation = graphql.NewObject(graphql.ObjectConfig{
 		},
 		"deleteUser": &graphql.Field{
 			Type:        graphql.String,
-			Description: "Allows admins to delete a user",
+			Description: "Deletes the user with the given id and returns the id as confirmation",
 			Args: graphql.FieldConfigArgument{
 				"id": &graphql.ArgumentConfig{
-					Type:        graphql.String,
-					Description: "Deletes the user with the given id and returns the id as confirmation",
+					Type: graphql.NewNonNull(graphql.String),
 				},
 			},
 			Resolve: deleteUser,
@@ -71,6 +70,27 @@ var RootMutation = graphql.NewObject(graphql.ObjectConfig{
 				},
 			},
 			Resolve: createCategory,
+		},
+		"editCategory": &graphql.Field{
+			Type:        categoryType,
+			Description: "Allows admins and editors to modify a category",
+			Args: graphql.FieldConfigArgument{
+				"category": &graphql.ArgumentConfig{
+					Type:        categoryEditType,
+					Description: "The data payload of the category to edit",
+				},
+			},
+			Resolve: editCategory,
+		},
+		"deleteCategory": &graphql.Field{
+			Type:        graphql.String,
+			Description: "Deletes the category with the given id and returns the id as confirmation",
+			Args: graphql.FieldConfigArgument{
+				"id": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.String),
+				},
+			},
+			Resolve: deleteCategory,
 		},
 	},
 })

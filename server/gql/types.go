@@ -187,12 +187,28 @@ var categoryCreateType = graphql.NewInputObject(
 		Name: "CreateCategoryInput",
 		Fields: graphql.InputObjectConfigFieldMap{
 			"title": &graphql.InputObjectFieldConfig{
-				Type:        graphql.NewNonNull(graphql.String),
-				Description: "A title for the new category",
+				Type: graphql.NewNonNull(graphql.String),
 			},
 			"description": &graphql.InputObjectFieldConfig{
-				Type:        graphql.String,
-				Description: "A simple description of the category.",
+				Type: graphql.String,
+			},
+		},
+	},
+)
+
+var categoryEditType = graphql.NewInputObject(
+	graphql.InputObjectConfig{
+		Name: "CategoryUserInput",
+		Fields: graphql.InputObjectConfigFieldMap{
+			"id": &graphql.InputObjectFieldConfig{
+				Type:        graphql.NewNonNull(graphql.String),
+				Description: "A string representation of the id of the category to edit",
+			},
+			"title": &graphql.InputObjectFieldConfig{
+				Type: graphql.String,
+			},
+			"description": &graphql.InputObjectFieldConfig{
+				Type: graphql.String,
 			},
 		},
 	},
