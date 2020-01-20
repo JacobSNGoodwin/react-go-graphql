@@ -158,7 +158,7 @@ var productType = graphql.NewObject(graphql.ObjectConfig{
 	},
 })
 
-// productType holds information for a single category
+// categoryType holds information for a single category
 var categoryType = graphql.NewObject(graphql.ObjectConfig{
 	Name:        "Category",
 	Description: "A product category title with its description",
@@ -181,3 +181,19 @@ var categoryType = graphql.NewObject(graphql.ObjectConfig{
 		},
 	},
 })
+
+var categoryCreateType = graphql.NewInputObject(
+	graphql.InputObjectConfig{
+		Name: "CreateCategoryInput",
+		Fields: graphql.InputObjectConfigFieldMap{
+			"title": &graphql.InputObjectFieldConfig{
+				Type:        graphql.NewNonNull(graphql.String),
+				Description: "A title for the new category",
+			},
+			"description": &graphql.InputObjectFieldConfig{
+				Type:        graphql.String,
+				Description: "A simple description of the category.",
+			},
+		},
+	},
+)

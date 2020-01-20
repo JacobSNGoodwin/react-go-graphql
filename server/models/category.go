@@ -5,6 +5,7 @@ import (
 	"github.com/maxbrain0/react-go-graphql/server/database"
 	"github.com/maxbrain0/react-go-graphql/server/errors"
 	uuid "github.com/satori/go.uuid"
+	"github.com/sirupsen/logrus"
 )
 
 // Category holds the title and description of a product
@@ -46,6 +47,28 @@ func (c *Category) GetByID(p graphql.ResolveParams) error {
 		Find(&c).Error; err != nil {
 		ctxLogger.WithError(err).Debugln("DB Error finding category by ID")
 		return errors.NewInternal("Error finding category", nil)
+	}
+
+	return nil
+}
+
+// Create adds a new Category to the database
+// If it fails, returns a Failed to create error
+func (c *Category) Create(p graphql.ResolveParams) error {
+	db := database.Conn
+	ctxUser := p.Context.Value(ContextKeyUser).(User)
+
+	if !hasRole(ctxUser.Roles, "admin") && !hasRole(ctxUser.Roles, "editor") {
+		return errors.NewForbidden("Not authorized", nil)
+	}
+
+	ctxLogger.WithFields(logrus.Fields{
+		"Title": c.Title,
+	}).Infoln("Creating category")
+
+	if err := db.Create(&c).Model(&c).Error; err != nil {
+		ctxLogger.WithError(err).Debugln("DB Error creating category")
+		return errors.NewInternal("Error creating category", nil)
 	}
 
 	return nil

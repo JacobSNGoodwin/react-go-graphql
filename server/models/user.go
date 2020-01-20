@@ -157,7 +157,7 @@ func (u *User) Update(p graphql.ResolveParams, updates map[string]interface{}, u
 		return errors.NewForbidden("Not authorized", nil)
 	}
 
-	ctxLogger.WithField("id", u.ID).Infoln("Update User: %v")
+	ctxLogger.WithField("id", u.ID).Infoln("Update User")
 
 	if err := db.First(&u).Error; err != nil {
 		ctxLogger.WithError(err).Debugln("DB Error updating user")

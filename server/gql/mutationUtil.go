@@ -248,3 +248,30 @@ func deleteUser(p graphql.ResolveParams) (interface{}, error) {
 
 	return id, nil
 }
+
+func createCategory(p graphql.ResolveParams) (interface{}, error) {
+	c := models.Category{}
+
+	category := p.Args["category"].(map[string]interface{})
+
+	// build user model making sure of valid type-assertions
+	if title, ok := category["title"].(string); ok {
+		c.Title = title
+	}
+
+	if description, ok := category["description"].(string); ok {
+		c.Description = description
+	}
+
+	err := c.Create(p)
+
+	if err != nil {
+		ctxLogger.WithFields(logrus.Fields{
+			"Title": c.Title,
+		}).Warn("Unable create category")
+		return nil, err
+	}
+
+	return c, nil
+
+}

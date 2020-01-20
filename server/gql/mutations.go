@@ -61,5 +61,16 @@ var RootMutation = graphql.NewObject(graphql.ObjectConfig{
 			},
 			Resolve: deleteUser,
 		},
+		"createCategory": &graphql.Field{
+			Type:        categoryType,
+			Description: "Allows admins and editors to create categories",
+			Args: graphql.FieldConfigArgument{
+				"category": &graphql.ArgumentConfig{
+					Type:        categoryCreateType,
+					Description: "The data payload for the category to add",
+				},
+			},
+			Resolve: createCategory,
+		},
 	},
 })
