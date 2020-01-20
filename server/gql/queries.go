@@ -120,5 +120,22 @@ var RootQuery = graphql.NewObject(graphql.ObjectConfig{
 				return product, nil
 			},
 		},
+		"category": &graphql.Field{
+			Type:        categoryType,
+			Description: "Gets a single category by id",
+			Args: graphql.FieldConfigArgument{
+				"id": &graphql.ArgumentConfig{
+					Type:        graphql.NewNonNull(graphql.String),
+					Description: "A v4 uuid casted as a string",
+				},
+			},
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				var category models.Category
+				if err := category.GetByID(p); err != nil {
+					return nil, err
+				}
+				return category, nil
+			},
+		},
 	},
 })

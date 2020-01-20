@@ -3,6 +3,8 @@ package models
 import (
 	"github.com/graphql-go/graphql"
 	"github.com/maxbrain0/react-go-graphql/server/database"
+	"github.com/maxbrain0/react-go-graphql/server/errors"
+	uuid "github.com/satori/go.uuid"
 )
 
 // Category holds the title and description of a product
@@ -28,6 +30,22 @@ func (c *Categories) GetAll(p graphql.ResolveParams) error {
 			Offset(p.Args["offset"].(int)).
 			Find(&c); result.Error != nil {
 		return result.Error
+	}
+
+	return nil
+}
+
+// GetByID gets category from database based on the its id
+func (c *Category) GetByID(p graphql.ResolveParams) error {
+	db := database.Conn
+
+	ctxLogger.WithField("id", p.Args["id"].(string)).Infoln("GetByID Categories")
+	// Find by uuid or email, which should both be unique
+	if err := db.
+		Where("id = ?", uuid.FromStringOrNil(p.Args["id"].(string))).
+		Find(&c).Error; err != nil {
+		ctxLogger.WithError(err).Debugln("DB Error finding category by ID")
+		return errors.NewInternal("Error finding category", nil)
 	}
 
 	return nil
