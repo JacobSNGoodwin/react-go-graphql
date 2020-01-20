@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/maxbrain0/react-go-graphql/server/database"
@@ -43,7 +42,7 @@ func NewProductCategoriesLoader() *CategoriesLoader {
 			output := make([][]Category, len(ids))
 			outputErrors := make([]error, len(ids))
 
-			rows, _ := db.
+			rows, e := db.
 				Raw("SELECT * FROM categories JOIN product_categories ON product_categories.category_id = id WHERE product_id IN (?)", ids).
 				Rows()
 
@@ -59,13 +58,14 @@ func NewProductCategoriesLoader() *CategoriesLoader {
 			}
 
 			for i, id := range ids {
+				if e != nil {
+					outputErrors[i] = errors.NewInternal("Failed to load categories for products", nil)
+				}
 				outputID, ok := productCategories[id]
 				if !ok {
-					output[i] = nil
-					outputErrors[i] = errors.NewInternal("Error getting category for product", fmt.Errorf("Unknown error loading category"))
+					output[i] = []Category{}
 				} else {
 					output[i] = outputID
-					outputErrors[i] = nil
 				}
 			}
 
@@ -84,7 +84,7 @@ func NewCategoryProductsLoader() *ProductsLoader {
 			output := make([][]Product, len(ids))
 			outputErrors := make([]error, len(ids))
 
-			rows, _ := db.
+			rows, e := db.
 				Raw("SELECT * FROM products JOIN product_categories ON product_categories.product_id = id WHERE category_id IN (?)", ids).
 				Rows()
 
@@ -100,13 +100,14 @@ func NewCategoryProductsLoader() *ProductsLoader {
 			}
 
 			for i, id := range ids {
+				if e != nil {
+					outputErrors[i] = errors.NewInternal("Failed to load products for categories", nil)
+				}
 				outputID, ok := categoryProducts[id]
 				if !ok {
-					output[i] = nil
-					outputErrors[i] = errors.NewInternal("Error getting product for category", fmt.Errorf("Unknown error loading product"))
+					output[i] = []Product{}
 				} else {
 					output[i] = outputID
-					outputErrors[i] = nil
 				}
 			}
 
