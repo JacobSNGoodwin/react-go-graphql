@@ -105,7 +105,7 @@ func (c *Category) Update(p graphql.ResolveParams, updates map[string]interface{
 		"ID": c.ID,
 	}).Infoln("Updating category")
 
-	if err := db.Model(&c).Updates(updates).Error; err != nil {
+	if err := db.First(&c).Model(&c).Updates(updates).Error; err != nil {
 		ctxLogger.WithError(err).Debugln("DB Error updating category")
 		return errors.NewInternal("Error updating category", nil)
 	}
