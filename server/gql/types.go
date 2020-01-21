@@ -121,3 +121,160 @@ var roleEnum = graphql.NewEnum(graphql.EnumConfig{
 		},
 	},
 })
+
+// productType holds information for a single product
+var productType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "Product",
+	Fields: graphql.Fields{
+		"id": &graphql.Field{
+			Type: graphql.NewNonNull(graphql.String),
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				// need to resolve uuid to string
+				if product, ok := p.Source.(models.Product); ok {
+					return product.ID.String(), nil
+				}
+				return nil, nil
+			},
+		},
+		"name": &graphql.Field{
+			Type: graphql.NewNonNull(graphql.String),
+		},
+		"description": &graphql.Field{
+			Type: graphql.NewNonNull(graphql.String),
+		},
+		"price": &graphql.Field{
+			Type:        graphql.NewNonNull(graphql.Int),
+			Description: "Holds the product price in cents as an integer",
+		},
+		"imageUri": &graphql.Field{
+			Type:        graphql.NewNonNull(graphql.String),
+			Description: "Holds the user's image Uri, if any",
+		},
+		"location": &graphql.Field{
+			Type:        graphql.NewNonNull(graphql.String),
+			Description: "The aisle and row of the product. Up to 6 characters are allowed",
+		},
+		// categories in init file to avoid cyclical reference
+	},
+})
+
+var productCreateType = graphql.NewInputObject(
+	graphql.InputObjectConfig{
+		Name: "CreateProductInput",
+		Fields: graphql.InputObjectConfigFieldMap{
+			"name": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.String),
+			},
+			"description": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.String),
+			},
+			"price": &graphql.InputObjectFieldConfig{
+				Type:        graphql.NewNonNull(graphql.Int),
+				Description: "The price of the product in cents",
+			},
+			"imageUri": &graphql.InputObjectFieldConfig{
+				Type:        graphql.String,
+				Description: "Holds the user's image Uri, if any",
+			},
+			"location": &graphql.InputObjectFieldConfig{
+				Type:        graphql.String,
+				Description: "The aisle and row of the product. Up to 6 characters are allowed",
+			},
+			"categories": &graphql.InputObjectFieldConfig{
+				Type:        graphql.NewList(graphql.String),
+				Description: "An array of categories to assign to the product",
+			},
+		},
+	},
+)
+
+var productEditType = graphql.NewInputObject(
+	graphql.InputObjectConfig{
+		Name: "EditProductInput",
+		Fields: graphql.InputObjectConfigFieldMap{
+			"id": &graphql.InputObjectFieldConfig{
+				Type:        graphql.NewNonNull(graphql.String),
+				Description: "A string representation of the id of the product to edit",
+			},
+			"name": &graphql.InputObjectFieldConfig{
+				Type: graphql.String,
+			},
+			"description": &graphql.InputObjectFieldConfig{
+				Type: graphql.String,
+			},
+			"price": &graphql.InputObjectFieldConfig{
+				Type:        graphql.Int,
+				Description: "The price of the product in cents",
+			},
+			"imageUri": &graphql.InputObjectFieldConfig{
+				Type:        graphql.String,
+				Description: "Holds the user's image Uri, if any",
+			},
+			"location": &graphql.InputObjectFieldConfig{
+				Type:        graphql.String,
+				Description: "The aisle and row of the product. Up to 6 characters are allowed",
+			},
+			"categories": &graphql.InputObjectFieldConfig{
+				Type:        graphql.NewList(graphql.String),
+				Description: "An array of categories to assign to the product",
+			},
+		},
+	},
+)
+
+// categoryType holds information for a single category
+var categoryType = graphql.NewObject(graphql.ObjectConfig{
+	Name:        "Category",
+	Description: "A product category title with its description",
+	Fields: graphql.Fields{
+		"id": &graphql.Field{
+			Type: graphql.NewNonNull(graphql.String),
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				// need to resolve uuid to string
+				if category, ok := p.Source.(models.Category); ok {
+					return category.ID.String(), nil
+				}
+				return nil, nil
+			},
+		},
+		"title": &graphql.Field{
+			Type: graphql.NewNonNull(graphql.String),
+		},
+		"description": &graphql.Field{
+			Type: graphql.NewNonNull(graphql.String),
+		},
+		// products in init file to avoid cyclical reference
+	},
+})
+
+var categoryCreateType = graphql.NewInputObject(
+	graphql.InputObjectConfig{
+		Name: "CreateCategoryInput",
+		Fields: graphql.InputObjectConfigFieldMap{
+			"title": &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(graphql.String),
+			},
+			"description": &graphql.InputObjectFieldConfig{
+				Type: graphql.String,
+			},
+		},
+	},
+)
+
+var categoryEditType = graphql.NewInputObject(
+	graphql.InputObjectConfig{
+		Name: "CategoryUserInput",
+		Fields: graphql.InputObjectConfigFieldMap{
+			"id": &graphql.InputObjectFieldConfig{
+				Type:        graphql.NewNonNull(graphql.String),
+				Description: "A string representation of the id of the category to edit",
+			},
+			"title": &graphql.InputObjectFieldConfig{
+				Type: graphql.String,
+			},
+			"description": &graphql.InputObjectFieldConfig{
+				Type: graphql.String,
+			},
+		},
+	},
+)

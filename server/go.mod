@@ -3,8 +3,6 @@ module github.com/maxbrain0/react-go-graphql/server
 go 1.13
 
 require (
-	github.com/casbin/casbin/v2 v2.1.2
-	github.com/casbin/gorm-adapter/v2 v2.0.3
 	github.com/coreos/go-oidc v2.1.0+incompatible
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-redis/redis v6.15.6+incompatible
@@ -19,7 +17,8 @@ require (
 	github.com/pquerna/cachecontrol v0.0.0-20180517163645-1555304b9b35 // indirect
 	github.com/satori/go.uuid v1.2.0
 	github.com/sirupsen/logrus v1.4.2
-	golang.org/x/oauth2 v0.0.0-20191122200657-5d9234df094c
+	github.com/vektah/dataloaden v0.3.0
+	golang.org/x/oauth2 v0.0.0-20191122200657-5d9234df094c // indirect
 	golang.org/x/sys v0.0.0-20191127021746-63cb32ae39b2 // indirect
 	gopkg.in/square/go-jose.v2 v2.4.0 // indirect
 )
