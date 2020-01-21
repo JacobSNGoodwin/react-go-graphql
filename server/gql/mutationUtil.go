@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/graphql-go/graphql"
@@ -256,7 +257,7 @@ func createCategory(p graphql.ResolveParams) (interface{}, error) {
 
 	// build user model making sure of valid type-assertions
 	if title, ok := category["title"].(string); ok {
-		c.Title = title
+		c.Title = strings.ToLower(title)
 	}
 
 	if description, ok := category["description"].(string); ok {
