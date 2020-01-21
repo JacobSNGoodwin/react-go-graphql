@@ -32,6 +32,9 @@ type UserClaims struct {
 // Users holds an array of users
 type Users []User
 
+// RoleMap holds Role references to roles which helps gorm attach roles to user in graphql
+var RoleMap map[string]*Role
+
 // Login takes the current user and logs them in if they exist.
 // It creates the user if the user doesn't yet exist
 func (u *User) Login(p graphql.ResolveParams) error {

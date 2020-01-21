@@ -317,3 +317,48 @@ func deleteCategory(p graphql.ResolveParams) (interface{}, error) {
 
 	return id, nil
 }
+
+func createProduct(p graphql.ResolveParams) (interface{}, error) {
+	pr := models.Product{}
+
+	product := p.Args["product"].(map[string]interface{})
+
+	// build user model making sure of valid type-assertions
+	if name, ok := product["name"].(string); ok {
+		pr.Name = name
+	}
+
+	if description, ok := product["description"].(string); ok {
+		pr.Description = description
+	}
+
+	if imageURI, ok := product["imageUri"].(string); ok {
+		pr.ImageURI = imageURI
+	}
+
+	cs := models.Categories{}
+	if inputCategories, ok := product["categories"].([]string); ok {
+		for _, c := range inputCategories {
+			cid, err := uuid.FromString(c)
+
+			if err != nil {
+				return nil, errors.NewInput("Error adding categories for product", nil)
+			}
+
+			cModel := models.Category{}
+			cModel.ID = cid
+			cs = append(cs, cModel)
+		}
+	}
+
+	err := pr.Create(p, cs)
+
+	if err != nil {
+		ctxLogger.WithFields(logrus.Fields{
+			"Name": pr.Name,
+		}).Warn("Unable create product")
+		return nil, err
+	}
+
+	return pr, nil
+}

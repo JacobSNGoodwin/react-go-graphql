@@ -4,9 +4,6 @@ import "github.com/sirupsen/logrus"
 
 import "github.com/maxbrain0/react-go-graphql/server/database"
 
-// RoleMap holds Role references to roles which helps gorm attach roles to user in graphql
-var RoleMap map[string]*Role
-
 // Init assures tables for provided models are available and initialized a couple of users and roles
 func Init() {
 	db := database.Conn

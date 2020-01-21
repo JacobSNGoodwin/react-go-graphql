@@ -5,6 +5,7 @@ import (
 	"github.com/maxbrain0/react-go-graphql/server/database"
 	"github.com/maxbrain0/react-go-graphql/server/errors"
 	uuid "github.com/satori/go.uuid"
+	"github.com/sirupsen/logrus"
 )
 
 // Product holds information about a product and its price
@@ -49,6 +50,29 @@ func (pr *Product) GetByID(p graphql.ResolveParams) error {
 		Find(&pr).Error; err != nil {
 		ctxLogger.WithError(err).Debugln("DB Error finding product by ID")
 		return errors.NewInternal("Error finding product", nil)
+	}
+
+	return nil
+}
+
+// Create adds a new Product to the database
+// If it fails, returns a Failed to create error
+func (pr *Product) Create(p graphql.ResolveParams, cs Categories) error {
+	db := database.Conn
+	ctxUser := p.Context.Value(ContextKeyUser).(User)
+
+	if !hasRole(ctxUser.Roles, "admin") && !hasRole(ctxUser.Roles, "editor") {
+		return errors.NewForbidden("Not authorized", nil)
+	}
+
+	ctxLogger.WithFields(logrus.Fields{
+		"Name":       pr.Name,
+		"Categories": cs,
+	}).Infoln("Creating product with categories")
+
+	if err := db.Model(&pr).Create(&pr).Association("Categories").Append(cs).Error; err != nil {
+		ctxLogger.WithError(err).Debugln("DB Error creating product")
+		return errors.NewInternal("Error creating product", nil)
 	}
 
 	return nil
