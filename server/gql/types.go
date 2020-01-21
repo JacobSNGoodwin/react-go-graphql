@@ -188,6 +188,40 @@ var productCreateType = graphql.NewInputObject(
 	},
 )
 
+var productEditType = graphql.NewInputObject(
+	graphql.InputObjectConfig{
+		Name: "EditProductInput",
+		Fields: graphql.InputObjectConfigFieldMap{
+			"id": &graphql.InputObjectFieldConfig{
+				Type:        graphql.NewNonNull(graphql.String),
+				Description: "A string representation of the id of the product to edit",
+			},
+			"name": &graphql.InputObjectFieldConfig{
+				Type: graphql.String,
+			},
+			"description": &graphql.InputObjectFieldConfig{
+				Type: graphql.String,
+			},
+			"price": &graphql.InputObjectFieldConfig{
+				Type:        graphql.Int,
+				Description: "The price of the product in cents",
+			},
+			"imageUri": &graphql.InputObjectFieldConfig{
+				Type:        graphql.String,
+				Description: "Holds the user's image Uri, if any",
+			},
+			"location": &graphql.InputObjectFieldConfig{
+				Type:        graphql.String,
+				Description: "The aisle and row of the product. Up to 6 characters are allowed",
+			},
+			"categories": &graphql.InputObjectFieldConfig{
+				Type:        graphql.NewList(graphql.String),
+				Description: "An array of categories to assign to the product",
+			},
+		},
+	},
+)
+
 // categoryType holds information for a single category
 var categoryType = graphql.NewObject(graphql.ObjectConfig{
 	Name:        "Category",

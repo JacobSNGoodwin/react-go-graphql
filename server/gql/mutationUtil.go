@@ -346,7 +346,6 @@ func createProduct(p graphql.ResolveParams) (interface{}, error) {
 
 	cs := models.Categories{}
 	if inputCategories, ok := product["categories"].([]interface{}); ok {
-		ctxLogger.WithField("Input Categories", inputCategories).Infoln("Input categories")
 		for _, c := range inputCategories {
 			cid, err := uuid.FromString(c.(string))
 
@@ -366,6 +365,64 @@ func createProduct(p graphql.ResolveParams) (interface{}, error) {
 		ctxLogger.WithFields(logrus.Fields{
 			"Name": pr.Name,
 		}).Warn("Unable create product")
+		return nil, err
+	}
+
+	return pr, nil
+}
+
+func editProduct(p graphql.ResolveParams) (interface{}, error) {
+	pr := models.Product{}
+	product := p.Args["product"].(map[string]interface{})
+	id, err := uuid.FromString(product["id"].(string))
+	if err != nil {
+		return nil, errors.NewInternal("Not a valid UUID", err)
+	}
+	pr.ID = id
+
+	// we'll build a map as then we can ignore fields the user does not want to update
+	m := make(map[string]interface{})
+	if name, ok := product["name"].(string); ok {
+		m["name"] = name
+	}
+
+	if description, ok := product["description"].(string); ok {
+		m["description"] = description
+	}
+
+	if price, ok := product["price"].(int); ok {
+		m["price"] = price
+	}
+
+	if imageURI, ok := product["imageUri"].(string); ok {
+		m["image_uri"] = imageURI
+	}
+
+	if location, ok := product["location"].(string); ok {
+		m["location"] = location
+	}
+
+	cs := models.Categories{}
+	if inputCategories, ok := product["categories"].([]interface{}); ok {
+		for _, c := range inputCategories {
+			cid, err := uuid.FromString(c.(string))
+
+			if err != nil {
+				return nil, errors.NewInput("Error adding categories for product", nil)
+			}
+
+			cModel := models.Category{}
+			cModel.ID = cid
+			cs = append(cs, cModel)
+		}
+	}
+
+	err = pr.Update(p, m, cs)
+
+	if err != nil {
+		ctxLogger.WithFields(logrus.Fields{
+			"Name": pr.Name,
+		}).Warn("Unable update product")
 		return nil, err
 	}
 

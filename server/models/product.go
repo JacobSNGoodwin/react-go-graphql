@@ -77,3 +77,24 @@ func (pr *Product) Create(p graphql.ResolveParams, cs Categories) error {
 
 	return nil
 }
+
+// Update attempts to update an existing product
+func (pr *Product) Update(p graphql.ResolveParams, updates map[string]interface{}, cs Categories) error {
+	db := database.Conn
+
+	ctxUser := p.Context.Value(ContextKeyUser).(User)
+
+	if !hasRole(ctxUser.Roles, "admin") && !hasRole(ctxUser.Roles, "editor") {
+		return errors.NewForbidden("Not authorized", nil)
+	}
+
+	ctxLogger.WithField("id", pr.ID).Infoln("Updating Product")
+
+	err := db.First(&pr).Updates(updates).Association("Categories").Replace(cs).Error
+
+	if err != nil {
+		return errors.NewInput("Error updating product", nil)
+	}
+
+	return nil
+}
