@@ -57,11 +57,11 @@ func Init() {
 
 	// Create sample categories and products
 	apparel := &Category{
-		Title:       "Apparel",
+		Title:       "apparel",
 		Description: "Clothing, textiles, and all things wearable",
 	}
 	footwear := &Category{
-		Title:       "Footwear",
+		Title:       "footwear",
 		Description: "Things you use to cover ya dadgummed feet",
 	}
 
