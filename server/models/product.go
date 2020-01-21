@@ -98,3 +98,43 @@ func (pr *Product) Update(p graphql.ResolveParams, updates map[string]interface{
 
 	return nil
 }
+
+// Delete removes product with pr.ID
+func (pr *Product) Delete(p graphql.ResolveParams) error {
+	db := database.Conn
+	ctxUser := p.Context.Value(ContextKeyUser).(User)
+
+	if !hasRole(ctxUser.Roles, "admin") && !hasRole(ctxUser.Roles, "editor") {
+		return errors.NewForbidden("Not authorized", nil)
+	}
+
+	ctxLogger.WithFields(logrus.Fields{
+		"ID": pr.ID,
+	}).Infoln("Deleting product")
+
+	// create a transacation to make sure product association to categories is removed
+	tx := db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if err := tx.Model(&pr).Association("Categories").Clear().Error; err != nil {
+		ctxLogger.WithError(err).Debugln("DB Error deleting product")
+		tx.Rollback()
+		errors.NewInternal("Error deleting product", nil)
+	}
+
+	if err := tx.Delete(&pr).Error; err != nil {
+		ctxLogger.WithError(err).Debugln("DB Error deleting product")
+		tx.Rollback()
+		return errors.NewInternal("Error deleting product", nil)
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		return errors.NewInternal("Error deleting product", nil)
+	}
+
+	return nil
+}

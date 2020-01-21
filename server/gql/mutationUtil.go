@@ -428,3 +428,14 @@ func editProduct(p graphql.ResolveParams) (interface{}, error) {
 
 	return pr, nil
 }
+
+func deleteProduct(p graphql.ResolveParams) (interface{}, error) {
+	pr := models.Product{}
+	id := p.Args["id"].(string)
+	pr.ID = uuid.FromStringOrNil(id)
+	if err := pr.Delete(p); err != nil {
+		return nil, err
+	}
+
+	return id, nil
+}
