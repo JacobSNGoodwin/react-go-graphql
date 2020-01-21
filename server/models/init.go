@@ -90,10 +90,10 @@ func Init() {
 	}).Model(&product1).Association("Categories").Append([]Category{*apparel, *footwear})
 
 	ctxLogger.WithFields(logrus.Fields{
-		"id":        product1.ID,
-		"Name":      product1.Name,
-		"UpdatedAt": product1.UpdatedAt,
-		"Roles":     product1.Categories,
+		"id":         product1.ID,
+		"Name":       product1.Name,
+		"UpdatedAt":  product1.UpdatedAt,
+		"Categories": product1.Categories,
 	}).Debugln("Created or found product")
 
 	// Create products and append categories
@@ -107,9 +107,9 @@ func Init() {
 	}).Model(&product2).Association("Categories").Append([]Category{*apparel})
 
 	ctxLogger.WithFields(logrus.Fields{
-		"id":        product2.ID,
-		"Name":      product2.Name,
-		"UpdatedAt": product2.UpdatedAt,
-		"Roles":     product2.Categories,
+		"id":         product2.ID,
+		"Name":       product2.Name,
+		"UpdatedAt":  product2.UpdatedAt,
+		"Categories": product2.Categories,
 	}).Debugln("Created or found product")
 }

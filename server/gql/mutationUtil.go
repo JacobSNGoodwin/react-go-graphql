@@ -332,14 +332,23 @@ func createProduct(p graphql.ResolveParams) (interface{}, error) {
 		pr.Description = description
 	}
 
+	if price, ok := product["price"].(int); ok {
+		pr.Price = price
+	}
+
 	if imageURI, ok := product["imageUri"].(string); ok {
 		pr.ImageURI = imageURI
 	}
 
+	if location, ok := product["location"].(string); ok {
+		pr.Location = location
+	}
+
 	cs := models.Categories{}
-	if inputCategories, ok := product["categories"].([]string); ok {
+	if inputCategories, ok := product["categories"].([]interface{}); ok {
+		ctxLogger.WithField("Input Categories", inputCategories).Infoln("Input categories")
 		for _, c := range inputCategories {
-			cid, err := uuid.FromString(c)
+			cid, err := uuid.FromString(c.(string))
 
 			if err != nil {
 				return nil, errors.NewInput("Error adding categories for product", nil)

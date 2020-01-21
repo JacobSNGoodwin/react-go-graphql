@@ -177,7 +177,7 @@ var productCreateType = graphql.NewInputObject(
 				Description: "Holds the user's image Uri, if any",
 			},
 			"location": &graphql.InputObjectFieldConfig{
-				Type:        graphql.NewNonNull(graphql.String),
+				Type:        graphql.String,
 				Description: "The aisle and row of the product. Up to 6 characters are allowed",
 			},
 			"categories": &graphql.InputObjectFieldConfig{
