@@ -22,15 +22,32 @@ type Categories []Category
 // GetAll returns a list of all products
 func (c *Categories) GetAll(p graphql.ResolveParams) error {
 	db := database.Conn
+	var err error = nil
 
 	ctxLogger.Infoln("GetAll Categories")
-	if result :=
-		db.
-			Order("title").
-			Limit(p.Args["limit"].(int)).
-			Offset(p.Args["offset"].(int)).
-			Find(&c); result.Error != nil {
-		return result.Error
+
+	// check for filter string
+	filter, ok := p.Args["filter"].(string)
+
+	if ok {
+		err =
+			db.
+				Where("title ILIKE ?", filter+"%").
+				Order("title").
+				Limit(p.Args["limit"].(int)).
+				Offset(p.Args["offset"].(int)).
+				Find(&c).Error
+	} else {
+		err =
+			db.
+				Order("title").
+				Limit(p.Args["limit"].(int)).
+				Offset(p.Args["offset"].(int)).
+				Find(&c).Error
+	}
+
+	if err != nil {
+		return errors.NewInput("Unable to retrieve data", nil)
 	}
 
 	return nil

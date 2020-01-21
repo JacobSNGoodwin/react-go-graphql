@@ -94,6 +94,10 @@ var RootQuery = graphql.NewObject(graphql.ObjectConfig{
 					Type:         graphql.Int,
 					DefaultValue: 0,
 				},
+				"filter": &graphql.ArgumentConfig{
+					Type:        graphql.String,
+					Description: "Filter by the first characters of the category",
+				},
 			},
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				var categories models.Categories
