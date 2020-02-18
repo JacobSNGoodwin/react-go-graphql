@@ -4,7 +4,9 @@
 This application demonstrates a full-stack application with a React client and a GraphQL backend API.
 
 ## Demo Video
-[![Demo Video](http://img.youtube.com/vi/lO0OoP4jmBw/0.jpg)](https://youtu.be/lO0OoP4jmBw)
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=lO0OoP4jmBw 
+" target="_blank"><img src="http://img.youtube.com/vi/lO0OoP4jmBw /0.jpg" 
+alt="Demo Video" width="640" height="480" border="10" /></a>
 
 ## WIP
 This project is currently in progress. See issues for details of features yet to be implemented, or to suggest a feature.
