@@ -1,4 +1,4 @@
-import {gql} from 'apollo-boost';
+import { gql } from "apollo-boost";
 
 const ME = gql`
   query me {
@@ -13,7 +13,7 @@ const ME = gql`
 `;
 
 const GET_USERS = gql`
-  query getUsers($limit: Int, $offset: Int){
+  query getUsers($limit: Int, $offset: Int) {
     users(limit: $limit, offset: $offset) {
       id
       name
@@ -24,4 +24,19 @@ const GET_USERS = gql`
   }
 `;
 
-export {ME, GET_USERS};
+const GET_PRODUCTS = gql`
+  query getProducts($limit: Int, $offset: Int) {
+    products(limit: $limit, offset: $offset) {
+      id
+      name
+      price
+      categories {
+        title
+      }
+      imageUri
+      location
+    }
+  }
+`;
+
+export { ME, GET_USERS, GET_PRODUCTS };

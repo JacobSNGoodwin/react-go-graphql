@@ -104,7 +104,7 @@ const Users: React.FC = props => {
   /*
    * Rendering
    */
-  if (loadingUsers)
+  if (loadingUsers) {
     return (
       <div className="container">
         <div className="columns is-centered">
@@ -112,6 +112,7 @@ const Users: React.FC = props => {
         </div>
       </div>
     );
+  }
 
   if (apolloError) {
     return <ErrorsList error={apolloError} />;

@@ -1,3 +1,4 @@
+// User
 interface IUserGQL {
   id: string;
   name?: string;
@@ -30,7 +31,42 @@ interface IUserVars {
   offset?: number;
 }
 
+// Role
+
 interface IRole {
   admin: boolean;
   editor: boolean;
+}
+
+// Product
+
+interface IProductGQL {
+  id: string;
+  name?: string;
+  price: number;
+  imageUri?: string;
+  location?: string;
+  categories?: ICategoryGQL[];
+}
+
+interface IProductData {
+  products: IProductGQL[];
+}
+
+interface IProductVars {
+  limit?: number;
+  offset?: number;
+}
+
+// Categories
+
+interface ICategoyGQL {
+  id: string;
+  title?: string;
+  description?: string;
+  products?: IProductGQL[];
+}
+
+interface ICategoryData {
+  categories: ICategoryGQL[];
 }
