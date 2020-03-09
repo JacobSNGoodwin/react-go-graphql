@@ -25,7 +25,7 @@
     "react-google-login": "^5.0.7",
     "react-hook-form": "^4.2.1",
     "react-icons": "^3.8.0",
-    "react-scripts": "3.2.0",
+    "react-scripts": "3.4.0",
     "typescript": "3.7.2"
   },
   "scripts": {
