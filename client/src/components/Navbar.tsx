@@ -32,15 +32,24 @@ const Navbar: React.FC = props => {
         </button>
       </div>
       <div className={`navbar-menu ${activeClass}`}>
-        {authContext.user && (
-          <div className="navbar-start">
-            {authContext.user.roles.admin && (
-              <Link to="/users-admin" className="navbar-item">
-                Users
+        <div className="navbar-start">
+          {authContext.user?.roles.admin && (
+            <Link to="/users-admin" className="navbar-item">
+              Users
+            </Link>
+          )}
+          {(authContext.user?.roles.admin ||
+            authContext.user?.roles.editor) && (
+            <>
+              <Link to="/products-admin" className="navbar-item">
+                Products
               </Link>
-            )}
-          </div>
-        )}
+              <Link to="/categories-admin" className="navbar-item">
+                Categories
+              </Link>
+            </>
+          )}
+        </div>
 
         <div className="navbar-end">
           {authContext.user ? (

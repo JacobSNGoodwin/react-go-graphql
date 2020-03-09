@@ -1,6 +1,6 @@
 import React from "react";
 
-const Products: React.FC = () => {
+const Products: React.FC = props => {
   return <h1>Productos</h1>;
 };
 
