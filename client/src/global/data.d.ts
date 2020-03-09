@@ -1,3 +1,9 @@
+// General
+interface IQueryVars {
+  limit?: number;
+  offset?: number;
+}
+
 // User
 interface IUserGQL {
   id: string;
@@ -26,21 +32,18 @@ interface IUserData {
   users: IUserGQL[];
 }
 
-interface IUserVars {
-  limit?: number;
-  offset?: number;
-}
+interface IUserVars extends IQueryVars {}
 
 // Role
 
-interface IRole {
+interface IRole extends IQueryVars {
   admin: boolean;
   editor: boolean;
 }
 
 // Product
 
-interface IProductGQL {
+interface IProduct {
   id: string;
   name?: string;
   price: number;
@@ -50,17 +53,14 @@ interface IProductGQL {
 }
 
 interface IProductData {
-  products: IProductGQL[];
+  products: IProduct[];
 }
 
-interface IProductVars {
-  limit?: number;
-  offset?: number;
-}
+interface IProductVars extends IQueryVars {}
 
 // Categories
 
-interface ICategoyGQL {
+interface ICategoy {
   id: string;
   title?: string;
   description?: string;
@@ -68,5 +68,7 @@ interface ICategoyGQL {
 }
 
 interface ICategoryData {
-  categories: ICategoryGQL[];
+  categories: ICategory[];
 }
+
+interface ICategoryVars extends IQueryVars {}

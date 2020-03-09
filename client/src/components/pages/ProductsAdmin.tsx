@@ -1,13 +1,14 @@
 import React from "react";
-import { useQuery, useMutation } from "@apollo/react-hooks";
+import { useQuery } from "@apollo/react-hooks";
 import { ApolloError } from "apollo-boost";
 
 import { GET_PRODUCTS } from "../../gql/queries";
 import Spinner from "../ui/Spinner";
 import ErrorsList from "../ErrorsList";
+import Product from "../Product";
 
 const Products: React.FC = props => {
-  const [createActive, setCreateActive] = React.useState<boolean>(false);
+  // const [createActive, setCreateActive] = React.useState<boolean>(false);
   const [apolloError, setApolloError] = React.useState<ApolloError | undefined>(
     undefined
   );
@@ -40,23 +41,22 @@ const Products: React.FC = props => {
   if (apolloError) {
     return <ErrorsList error={apolloError} />;
   } else {
-    console.log(data?.products);
+    const productList =
+      data &&
+      data.products.map(product => {
+        console.log(product);
+        return (
+          <div key={product.id} className="column is-half">
+            <Product product={product} />
+          </div>
+        );
+      });
     return (
       <>
         <h1 className="title is-1 has-text-centered">Products</h1>
         <div className="container">
           Products List
-          {/* <div className="columns is-centered">
-                <button
-                  className="button is-warning"
-                  onClick={() => {
-                    setCreateActive(true);
-                  }}
-                >
-                  Create
-                </button>
-              </div>
-              <div className="columns is-vcentered is-multiline">{userList}</div> */}
+          <div className="columns is-vcentered is-multiline">{productList}</div>
         </div>
       </>
     );
