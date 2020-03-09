@@ -35,7 +35,7 @@ const Navbar: React.FC = props => {
         {authContext.user && (
           <div className="navbar-start">
             {authContext.user.roles.admin && (
-              <Link to="/users" className="navbar-item">
+              <Link to="/users-admin" className="navbar-item">
                 Users
               </Link>
             )}

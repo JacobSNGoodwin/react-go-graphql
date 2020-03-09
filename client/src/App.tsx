@@ -5,10 +5,11 @@ import ApolloClient from "apollo-boost";
 
 import { AuthProvider } from "./components/contexts/AuthContext";
 import Navbar from "./components/Navbar";
-import Home from "./components/Home";
-import Login from "./components/Login";
-import Users from "./components/Users";
-import Error from "./components/Error";
+import Home from "./components/pages/Home";
+import Login from "./components/pages/Login";
+import UsersAdmin from "./components/pages/UsersAdmin";
+import ProductsAdmin from "./components/pages/ProductsAdmin";
+import Error from "./components/pages/Error";
 import PrivateRoute from "./components/PrivateRoute";
 import "./App.scss";
 
@@ -30,7 +31,13 @@ const App: React.FC = () => {
             <Router>
               <Home path="/" />
               <Login path="login" />
-              <PrivateRoute as={Users} admin path="users" />
+              <PrivateRoute as={UsersAdmin} admin path="users-admin" />
+              <PrivateRoute
+                as={ProductsAdmin}
+                admin
+                editor
+                path="products-admin"
+              />
               <Error path="error" />
             </Router>
           </div>

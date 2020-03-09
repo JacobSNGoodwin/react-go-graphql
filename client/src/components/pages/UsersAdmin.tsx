@@ -1,13 +1,13 @@
 import React from "react";
 import { useQuery, useMutation } from "@apollo/react-hooks";
 
-import User from "./User";
-import EditUser from "./EditUser";
-import { GET_USERS } from "../gql/queries";
-import { CREATE_USER, EDIT_USER, DELETE_USER } from "../gql/mutations";
-import Spinner from "./ui/Spinner";
-import { transformUserFromGQL } from "../util/util";
-import ErrorsList from "./ErrorsList";
+import User from "../User";
+import EditUser from "../EditUser";
+import { GET_USERS } from "../../gql/queries";
+import { CREATE_USER, EDIT_USER, DELETE_USER } from "../../gql/mutations";
+import Spinner from "../ui/Spinner";
+import { transformUserFromGQL } from "../../util/util";
+import ErrorsList from "../ErrorsList";
 import { ApolloError } from "apollo-boost";
 
 const Users: React.FC = props => {

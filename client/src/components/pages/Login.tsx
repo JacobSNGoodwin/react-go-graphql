@@ -1,6 +1,6 @@
 import React from "react";
 
-import Spinner from "./ui/Spinner";
+import Spinner from "../ui/Spinner";
 import styles from "./Login.module.scss";
 
 import {
@@ -11,11 +11,11 @@ import {
 
 import { RouteComponentProps } from "@reach/router";
 
-import { AuthContext } from "./contexts/AuthContext";
+import { AuthContext } from "../contexts/AuthContext";
 
 import FacebookLogin, { ReactFacebookLoginInfo } from "react-facebook-login";
-import FacebookIcon from "./icons/Facebook";
-import GoogleIcon from "./icons/Google";
+import FacebookIcon from "../icons/Facebook";
+import GoogleIcon from "../icons/Google";
 
 const Login: React.FC<RouteComponentProps> = props => {
   const authContext = React.useContext(AuthContext);
