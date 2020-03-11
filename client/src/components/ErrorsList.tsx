@@ -1,6 +1,6 @@
 import React from "react";
 import { ApolloError } from "apollo-boost";
-import { Redirect } from "@reach/router";
+import { navigate } from "@reach/router";
 import { AuthContext } from "./contexts/AuthContext";
 
 interface ErrorListProps {
@@ -10,26 +10,29 @@ interface ErrorListProps {
 const ErrorsList: React.FC<ErrorListProps> = props => {
   const authContext = React.useContext(AuthContext);
   const errorMessages: JSX.Element[] = [];
-  let redirectProps: ErrorProps | undefined = undefined;
-  props.error.graphQLErrors.forEach((error, i) => {
-    if (error.extensions && error.extensions.type === "FORBIDDEN") {
-      redirectProps = {
-        messages: ["You are not authenticated"],
-        includeLogin: true
-      };
+
+  React.useEffect(() => {
+    let redirectProps: ErrorProps | undefined = undefined;
+    props.error.graphQLErrors.forEach((error, i) => {
+      if (error.extensions && error.extensions.type === "FORBIDDEN") {
+        redirectProps = {
+          messages: ["You are not authenticated"],
+          includeLogin: true
+        };
+      }
+
+      errorMessages.push(
+        <p key={i} className="has-text-danger">
+          {error.message}
+        </p>
+      );
+    });
+
+    if (redirectProps) {
+      authContext.logout();
+      navigate("error", { state: redirectProps });
     }
-
-    errorMessages.push(
-      <p key={i} className="has-text-danger">
-        {error.message}
-      </p>
-    );
-  });
-
-  if (redirectProps) {
-    authContext.logout();
-    return <Redirect to="error" state={redirectProps} noThrow />;
-  }
+  }, [authContext, errorMessages, props.error.graphQLErrors]);
 
   return (
     <div className="container has-text-centered">

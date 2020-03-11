@@ -108,10 +108,14 @@ const AuthProvider: React.FC = props => {
 
     const userCookie = Cookies.get("userinfo");
 
+    if (!userCookie) {
+      setUser(undefined);
+    }
+
     if (userCookie && !user) {
       getMe();
     }
-  });
+  }, [user, refetchMe]);
 
   // Add login functions (for setting state here)
   const loginWithGoogle = (token: string) => {
