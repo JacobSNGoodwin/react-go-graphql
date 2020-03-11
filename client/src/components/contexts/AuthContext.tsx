@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useMutation, useQuery } from "@apollo/react-hooks";
-import { navigate, redirectTo } from "@reach/router";
+import { navigate } from "@reach/router";
 import Cookies from "js-cookie";
 
 import { LOGIN_GOOGLE, LOGIN_FACEBOOK } from "../../gql/mutations";
@@ -133,7 +133,7 @@ const AuthProvider: React.FC = props => {
   const logout = () => {
     Cookies.remove("userinfo");
     setUser(undefined);
-    redirectTo("/login");
+    navigate("/login");
   };
 
   if (googleLoading || facebookLoading || meLoading) {
