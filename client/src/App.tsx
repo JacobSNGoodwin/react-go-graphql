@@ -9,6 +9,7 @@ import Home from "./components/pages/Home";
 import Login from "./components/pages/Login";
 import UsersAdmin from "./components/pages/UsersAdmin";
 import ProductsAdmin from "./components/pages/ProductsAdmin";
+import CategoriesAdmin from "./components/pages/CategoriesAdmin";
 import NotFound from "./components/pages/NotFound";
 import Error from "./components/pages/Error";
 import PrivateRoute from "./components/PrivateRoute";
@@ -39,12 +40,12 @@ const App: React.FC = () => {
                 editor
                 path="products-admin"
               />
-              {/* <PrivateRoute
+              <PrivateRoute
                 as={CategoriesAdmin}
                 admin
                 editor
                 path="categories-admin"
-              /> */}
+              />
               <Error path="error" />
               <NotFound default />
             </Router>

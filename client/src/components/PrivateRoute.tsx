@@ -1,7 +1,6 @@
 import React from "react";
-import Cookies from "js-cookie";
 
-import { RouteComponentProps, Redirect } from "@reach/router";
+import { RouteComponentProps, navigate } from "@reach/router";
 import { AuthContext } from "./contexts/AuthContext";
 
 interface IPrivateRouteProps extends RouteComponentProps {
@@ -11,29 +10,17 @@ interface IPrivateRouteProps extends RouteComponentProps {
 }
 
 const PrivateRoute: React.FC<IPrivateRouteProps> = props => {
-  const { user, logout } = React.useContext(AuthContext);
-  const userCookie = Cookies.get("userinfo");
+  const { user } = React.useContext(AuthContext);
 
-  if (!user || !userCookie) {
-    const errorProps: ErrorProps = {
-      messages: ["You are not logged in"],
-      includeLogin: true
-    };
-
-    logout();
-
-    return <Redirect to="error" state={errorProps} noThrow />;
-  }
-
-  let { as: Comp } = props;
+  const { as: Comp } = props;
 
   let allowed: boolean = false;
 
-  if (props.admin && user.roles.admin) {
+  if (props.admin && user && user.roles.admin) {
     allowed = true;
   }
 
-  if (props.editor && user.roles.editor) {
+  if (props.editor && user && user.roles.editor) {
     allowed = true;
   }
 
@@ -42,7 +29,7 @@ const PrivateRoute: React.FC<IPrivateRouteProps> = props => {
       messages: ["You are not allowed to access this resrouce"],
       includeLogin: true
     };
-    return <Redirect to="error" state={errorProps} noThrow />;
+    navigate("error", { state: errorProps });
   }
 
   return <Comp {...props} />;
